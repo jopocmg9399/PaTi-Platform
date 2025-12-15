@@ -1,7 +1,18 @@
 // ====== CONFIGURACIÓN INICIAL ======
-// Configuración de PocketBase
-const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const PB_URL = isLocalhost 
+const PB_URL = 'https://pati-platform.onrender.com';
+
+const pb = new PocketBase(PB_URL);
+pb.autoCancellation(false);
+
+console.log('Conectando a PocketBase:', PB_URL);
+const pb = new PocketBase(PB_URL);
+pb.autoCancellation(false);
+
+console.log('Conectando a PocketBase:', PB_URL);
+
+// ====== REST OF YOUR CODE ======
+// ... (tu código existente sigue aquí)
+const PB_URL = 'https://pati-platform.onrender.com';
     ? 'http://127.0.0.1:8090'  // Local
   //  : 'https://tu-pocketbase-en-render.onrender.com'; // ← TU NUEVA URL de PocketBase en Render
 const pb = new PocketBase(PB_URL);
