@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: pati-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+    disk:
+      name: pb_data
+      mountPath: /app/pb_data
+      sizeGB: 1
+
+  - type: web
+    name: pati-frontend
+    env: static
+    buildCommand: pnpm build  # o `npm run build` si usas un builder
+    staticPublishPath: ./frontend
+    envVars:
+      - key: PB_BACKEND_URL
+        value: https://pati-backend.onrender.com
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://pati-backend.onrender.com/api/*
+      - type: rewrite
+        source: /_/*
+        destination: https://pati-backend.onrender.com/_/*
