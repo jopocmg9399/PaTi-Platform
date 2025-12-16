@@ -1,12 +1,15 @@
 {
-  "root": ".",
+  "root": "frontend",
   "clean_urls": true,
   "routes": {
     "/**": "index.html"
   },
   "headers": {
     "/**": {
-      "Content-Type": "text/javascript; charset=utf-8"
+      "Content-Type": "text/html; charset=utf-8"
+    },
+    "/*.js": {
+      "Content-Type": "text/javascript"
     }
   }
 }
