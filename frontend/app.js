@@ -1,29 +1,21 @@
 // ====== CONFIGURACIÓN INICIAL ======
-const PB_URL = 'https://pati-platform.onrender.com';
-
-const pb = new PocketBase(PB_URL);
-pb.autoCancellation(false);
-
-console.log('Conectando a PocketBase:', PB_URL);
-const pb = new PocketBase(PB_URL);
-pb.autoCancellation(false);
+// USAR SOLO UNA URL - Descomenta la que corresponda
+const PB_URL = 'https://pati-platform.onrender.com';  // Producción
+// const PB_URL = 'http://127.0.0.1:8090';  // Local - Solo para desarrollo
 
 console.log('Conectando a PocketBase:', PB_URL);
 
-// ====== REST OF YOUR CODE ======
-// ... (tu código existente sigue aquí)
-const PB_URL = 'https://pati-platform.onrender.com';
-    ? 'http://127.0.0.1:8090'  // Local
-  //  : 'https://tu-pocketbase-en-render.onrender.com'; // ← TU NUEVA URL de PocketBase en Render
+// Instancia única de PocketBase
 const pb = new PocketBase(PB_URL);
-// Configurar CORS si es necesario
 pb.autoCancellation(false);
+
 // Variables globales
 let currentUser = null;
 let currentStoreId = null;
 let cart = [];
 let stores = []; // Cache local de tiendas
 let categories = []; // Cache local de categorías
+let products = []; // Cache local de productos
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
@@ -31,6 +23,12 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
     loadInitialData();
     setupEventListeners();
+    
+    // Inicializar carrito
+    updateCart();
+    
+    // Cargar tiendas destacadas
+    loadFeaturedStores();
 });
 
 // ====== FUNCIONES DE AUTENTICACIÓN ======
@@ -121,13 +119,13 @@ async function userRegister(userData) {
     try {
         // Preparar datos para PocketBase
         const recordData = {
-            "username": userData.email, // Obligatorio en PocketBase
+            "username": userData.email,
             "email": userData.email,
             "emailVisibility": true,
             "password": userData.password,
             "passwordConfirm": userData.password,
             "role": userData.role,
-            "profile": JSON.stringify({ // Campo JSON como string
+            "profile": JSON.stringify({
                 "nombre": userData.name,
                 "telefono": userData.phone,
                 "direccion": userData.address
@@ -171,7 +169,17 @@ async function loadInitialData() {
             sort: 'name'
         });
         
-        console.log('Datos iniciales cargados:', { stores: stores.length, categories: categories.length });
+        // Cargar productos
+        products = await pb.collection('products').getFullList({
+            expand: 'store,category',
+            sort: '-created'
+        });
+        
+        console.log('Datos iniciales cargados:', { 
+            stores: stores.length, 
+            categories: categories.length,
+            products: products.length 
+        });
         
     } catch (error) {
         console.error('Error cargando datos iniciales:', error);
@@ -183,63 +191,56 @@ async function loadInitialData() {
             { id: 'C001', name: 'Electrónica' },
             { id: 'C002', name: 'Hogar' }
         ];
-    }
-}
-// Función para cargar configuración del hero
-async function loadHeroSettings() {
-    try {
-        const result = await pb.collection('hero_settings').getFirstListItem('');
-        return result;
-    } catch (error) {
-        console.error('Error cargando hero settings:', error);
-        return null;
+        products = products.length ? products : [
+            { id: 'prod1', name: "Producto Demo", store: "demo1", category: "C001", price1: 29.99, price2: 27.99, price3: 25.99, stock: 100, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Descripción de producto demo" }
+        ];
     }
 }
 
-// Función para guardar configuración del hero
-async function saveHeroSettings(data) {
-    try {
-        // Primero obtén el registro existente
-        const existing = await pb.collection('hero_settings').getFirstListItem('');
-        
-        // Actualiza
-        const result = await pb.collection('hero_settings').update(existing.id, {
-            ...data,
-            updated_at: new Date().toISOString()
-        });
-        return result;
-    } catch (error) {
-        console.error('Error guardando hero settings:', error);
-        throw error;
+async function loadFeaturedStores() {
+    const featuredStores = document.getElementById('featuredStores');
+    if (!featuredStores) return;
+    
+    featuredStores.innerHTML = '';
+    
+    const featured = stores.slice(0, 4);
+    
+    if (featured.length === 0) {
+        featuredStores.innerHTML = '<div class="col-12 text-center"><p>No hay tiendas destacadas</p></div>';
+        return;
     }
+    
+    featured.forEach(store => {
+        const storeCard = `
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card store-card h-100">
+                    <img src="${store.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
+                         class="card-img-top" alt="${store.name}" style="height: 180px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${store.name}</h5>
+                        <p class="card-text flex-grow-1">${store.description || 'Sin descripción'}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="store-status ${store.status === 'active' ? 'status-active' : 'status-inactive'}">
+                                ${store.status === 'active' ? 'Activo' : 'Inactivo'}
+                            </span>
+                            <button class="btn btn-primary" onclick="showStoreLogin('${store.id}')">
+                                <i class="fas fa-sign-in-alt"></i> Entrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        featuredStores.innerHTML += storeCard;
+    });
 }
 
-// Funciones similares para about_settings y contact_settings
-async function loadAboutSettings() {
-    try {
-        return await pb.collection('about_settings').getFirstListItem('');
-    } catch (error) {
-        console.error('Error cargando about settings:', error);
-        return null;
-    }
-}
-
-async function saveAboutSettings(data) {
-    try {
-        const existing = await pb.collection('about_settings').getFirstListItem('');
-        return await pb.collection('about_settings').update(existing.id, {
-            ...data,
-            updated_at: new Date().toISOString()
-        });
-    } catch (error) {
-        console.error('Error guardando about settings:', error);
-        throw error;
-    }
-}
 // ====== FUNCIONES DE PRODUCTOS ======
 async function loadProducts() {
     try {
         const productsList = document.getElementById('productsList');
+        if (!productsList) return;
+        
         productsList.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary"></div><p>Cargando productos...</p></div>';
         
         // Construir filtros
@@ -248,16 +249,15 @@ async function loadProducts() {
             filter = `store = "${currentStoreId}"`;
         }
         
-        // Obtener productos
-        const records = await pb.collection('products').getFullList({
-            filter: filter,
-            expand: 'store,category',
-            sort: '-created'
-        });
+        // Obtener productos desde cache o API
+        let productsToShow = products;
+        if (filter) {
+            productsToShow = products.filter(p => p.store === currentStoreId);
+        }
         
         productsList.innerHTML = '';
         
-        if (records.length === 0) {
+        if (productsToShow.length === 0) {
             productsList.innerHTML = `
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
@@ -268,9 +268,11 @@ async function loadProducts() {
             return;
         }
         
-        records.forEach(product => {
-            const storeName = product.expand?.store?.name || 'Sin tienda';
-            const categoryName = product.expand?.category?.name || 'Sin categoría';
+        productsToShow.forEach(product => {
+            const store = stores.find(s => s.id === product.store);
+            const category = categories.find(c => c.id === product.category);
+            const storeName = store ? store.name : 'Sin tienda';
+            const categoryName = category ? category.name : 'Sin categoría';
             
             const productCard = `
                 <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
@@ -308,14 +310,98 @@ async function loadProducts() {
     } catch (error) {
         console.error('Error cargando productos:', error);
         const productsList = document.getElementById('productsList');
+        if (productsList) {
+            productsList.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h4>Error cargando productos</h4>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function filterProductsAdvanced() {
+    const searchText = document.getElementById('searchProduct')?.value.toLowerCase() || '';
+    const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+    const storeFilter = document.getElementById('storeFilter')?.value || '';
+    const priceMin = parseFloat(document.getElementById('priceMin')?.value) || 0;
+    const priceMax = parseFloat(document.getElementById('priceMax')?.value) || Infinity;
+    
+    const productsList = document.getElementById('productsList');
+    if (!productsList) return;
+    
+    productsList.innerHTML = '';
+    
+    const filteredProducts = products.filter(product => {
+        // Filtro por texto de búsqueda
+        const matchesSearch = searchText === '' || 
+                            product.name.toLowerCase().includes(searchText) || 
+                            (product.description || '').toLowerCase().includes(searchText);
+        
+        // Filtro por categoría
+        const matchesCategory = categoryFilter === '' || product.category === categoryFilter;
+        
+        // Filtro por tienda
+        const matchesStore = storeFilter === '' || product.store === storeFilter;
+        
+        // Filtro por rango de precios
+        const productPrice = product.price1 || 0;
+        const matchesPrice = productPrice >= priceMin && productPrice <= priceMax;
+        
+        return matchesSearch && matchesCategory && matchesStore && matchesPrice;
+    });
+    
+    if (filteredProducts.length === 0) {
         productsList.innerHTML = `
             <div class="col-12 text-center py-5">
-                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-                <h4>Error cargando productos</h4>
-                <p>${error.message}</p>
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4>No se encontraron productos</h4>
+                <p>Intenta con otros filtros de búsqueda</p>
             </div>
         `;
+        return;
     }
+    
+    filteredProducts.forEach(product => {
+        const store = stores.find(s => s.id === product.store);
+        const category = categories.find(c => c.id === product.category);
+        const storeName = store ? store.name : 'Sin tienda';
+        const categoryName = category ? category.name : 'Sin categoría';
+        
+        const productCard = `
+            <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                <div class="card product-card h-100">
+                    <span class="category-badge badge bg-primary">${categoryName}</span>
+                    <img src="${product.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
+                         class="card-img-top product-image" alt="${product.name}">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${product.name}</h5>
+                        <p class="card-text flex-grow-1">${product.description || 'Sin descripción'}</p>
+                        <div class="price-tier">
+                            <span>1-10: </span><span>$${product.price1?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div class="price-tier">
+                            <span>11-50: </span><span>$${product.price2?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div class="price-tier">
+                            <span>51+: </span><span>$${product.price3?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div class="quantity-control">
+                            <button type="button" onclick="decreaseQuantity('${product.id}')">-</button>
+                            <input type="number" id="quantity-${product.id}" value="0" min="0" readonly>
+                            <button type="button" onclick="increaseQuantity('${product.id}')">+</button>
+                        </div>
+                        <button class="btn btn-primary mt-2 w-100" onclick="addToCart('${product.id}')">
+                            <i class="fas fa-cart-plus"></i> Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        productsList.innerHTML += productCard;
+    });
 }
 
 // ====== FUNCIONES DEL CARRITO ======
@@ -336,17 +422,15 @@ function decreaseQuantity(productId) {
 async function addToCart(productId) {
     try {
         const quantityInput = document.getElementById(`quantity-${productId}`);
-        const quantity = parseInt(quantityInput.value);
+        const quantity = parseInt(quantityInput?.value || 0);
         
         if (!quantity || quantity <= 0) {
             alert('Por favor, selecciona una cantidad mayor a cero');
             return;
         }
         
-        // Obtener producto desde PocketBase
-        const product = await pb.collection('products').getOne(productId, {
-            expand: 'store,category'
-        });
+        // Buscar producto en cache
+        const product = products.find(p => p.id === productId);
         
         if (!product) {
             alert('Producto no encontrado');
@@ -367,19 +451,20 @@ async function addToCart(productId) {
             existingItem.quantity += quantity;
             existingItem.unitPrice = unitPrice;
         } else {
+            const store = stores.find(s => s.id === product.store);
             cart.push({
                 id: product.id,
                 name: product.name,
                 unitPrice: unitPrice,
                 quantity: quantity,
                 storeId: product.store,
-                storeName: product.expand?.store?.name || 'Sin tienda',
+                storeName: store ? store.name : 'Sin tienda',
                 image: product.image
             });
         }
         
         // Resetear cantidad y actualizar carrito
-        quantityInput.value = 0;
+        if (quantityInput) quantityInput.value = 0;
         updateCart();
         showNotification(`${product.name} agregado al carrito`);
         
@@ -393,6 +478,8 @@ function updateCart() {
     const cartCount = document.getElementById('cartCount');
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
+    
+    if (!cartCount || !cartItems || !cartTotal) return;
     
     // Actualizar contador
     cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
@@ -437,23 +524,39 @@ function removeFromCart(productId) {
     showNotification('Producto eliminado del carrito');
 }
 
+function checkout() {
+    if (cart.length === 0) {
+        alert('Tu carrito está vacío');
+        return;
+    }
+    
+    if (!currentUser) {
+        alert('Debes iniciar sesión para realizar un pedido');
+        showLoginForm('customer');
+        return;
+    }
+    
+    alert('¡Pedido realizado con éxito! (Función checkout en desarrollo)');
+    cart = [];
+    updateCart();
+    
+    const offcanvas = document.getElementById('cartOffcanvas');
+    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+    if (bsOffcanvas) bsOffcanvas.hide();
+}
+
 // ====== FUNCIONES DE TIENDAS ======
 async function loadStores() {
     try {
         const storesList = document.getElementById('storesList');
         if (!storesList) return;
         
-        // Si ya cargamos las tiendas, usarlas
-        if (stores.length === 0) {
-            stores = await pb.collection('stores').getFullList({
-                filter: 'status = "active"',
-                sort: '-created'
-            });
-        }
-        
         storesList.innerHTML = '';
         
         stores.forEach(store => {
+            const category = categories.find(c => c.id === store.category);
+            const categoryName = category ? category.name : 'Sin categoría';
+            
             const storeCard = `
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card store-card h-100">
@@ -500,6 +603,30 @@ function showSection(section) {
     // Acciones específicas por sección
     if (section === 'products') {
         loadProducts();
+        // Configurar filtro de tiendas
+        const storeFilterContainer = document.getElementById('storeFilterContainer');
+        const storeFilter = document.getElementById('storeFilter');
+        
+        if (storeFilterContainer && storeFilter) {
+            if (currentStoreId) {
+                // Estamos en una tienda específica
+                storeFilterContainer.style.display = 'none';
+            } else {
+                // Estamos en la plataforma principal
+                storeFilterContainer.style.display = 'block';
+                
+                // Llenar filtro de tiendas
+                storeFilter.innerHTML = '<option value="">Todas las tiendas</option>';
+                stores.forEach(store => {
+                    if (store.status === 'active') {
+                        const option = document.createElement('option');
+                        option.value = store.id;
+                        option.textContent = store.name;
+                        storeFilter.appendChild(option);
+                    }
+                });
+            }
+        }
     } else if (section === 'storeSelection') {
         loadStores();
     }
@@ -568,7 +695,6 @@ function setupEventListeners() {
 }
 
 // ====== EXPORTAR FUNCIONES AL ÁMBITO GLOBAL ======
-// Esto permite que las funciones sean llamadas desde los atributos onclick en el HTML
 window.showSection = showSection;
 window.showStoreSelection = () => showSection('storeSelection');
 window.showCreateStoreForm = () => showSection('createStore');
@@ -620,25 +746,7 @@ window.increaseQuantity = increaseQuantity;
 window.decreaseQuantity = decreaseQuantity;
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
-window.checkout = () => {
-    if (cart.length === 0) {
-        alert('Tu carrito está vacío');
-        return;
-    }
-    
-    if (!currentUser) {
-        alert('Debes iniciar sesión para realizar un pedido');
-        showLoginForm('customer');
-        return;
-    }
-    
-    alert('¡Pedido realizado con éxito! (Función checkout en desarrollo)');
-    cart = [];
-    updateCart();
-    
-    const offcanvas = document.getElementById('cartOffcanvas');
-    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
-    if (bsOffcanvas) bsOffcanvas.hide();
-};
+window.checkout = checkout;
+window.filterProductsAdvanced = filterProductsAdvanced;
 
 console.log('app.js cargado correctamente');

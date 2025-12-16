@@ -1,0 +1,12 @@
+{
+  "root": ".",
+  "clean_urls": true,
+  "routes": {
+    "/**": "index.html"
+  },
+  "headers": {
+    "/**": {
+      "Content-Type": "text/javascript; charset=utf-8"
+    }
+  }
+}
