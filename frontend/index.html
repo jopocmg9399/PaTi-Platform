@@ -398,33 +398,112 @@
             transform: translateY(-3px);
         }
         @media (max-width: 768px) {
-            .product-card {
-                margin-bottom: 20px;
-            }
-            .hero-section h1 {
-                font-size: 2rem;
-            }
-            .admin-container {
-                flex-direction: column;
-            }
-            .admin-sidebar {
-                width: 100%;
-            }
-            .amazed-person {
-                flex-direction: column;
-                text-align: center;
-            }
-            .amazed-person img {
-                margin-right: 0;
-                margin-bottom: 1rem;
-            }
-            .action-buttons {
-                flex-direction: column;
-            }
-            .product-summary {
-                flex-direction: column;
-            }
-        }
+			.product-card {
+				margin-bottom: 20px;
+			}
+			.hero-section h1 {
+				font-size: 2rem;
+			}
+			.admin-container {
+				flex-direction: column;
+			}
+			.admin-sidebar {
+				width: 100%;
+			}
+			.amazed-person {
+				flex-direction: column;
+				text-align: center;
+			}
+			.amazed-person img {
+				margin-right: 0;
+				margin-bottom: 1rem;
+			}
+			.action-buttons {
+				flex-direction: column;
+			}
+			.product-summary {
+				flex-direction: column;
+			}
+			
+			/* AÑADE ESTO: */
+			.navbar-nav .btn {
+				margin-top: 10px;
+				width: 100%;
+			}
+			
+			.hero-section {
+				padding: 3rem 0;
+			}
+			
+			.hero-content {
+				padding: 1rem;
+				margin: 0 10px;
+			}
+			
+			.hero-section .btn {
+				display: block;
+				width: 100%;
+				margin-bottom: 10px;
+			}
+			
+			.cart-icon {
+				bottom: 10px;
+				right: 10px;
+				width: 50px;
+				height: 50px;
+			}
+		}
+		/* Tablas responsivas */
+		@media (max-width: 768px) {
+			.table-responsive {
+				overflow-x: auto;
+				-webkit-overflow-scrolling: touch;
+			}
+			
+			.table th, 
+			.table td {
+				white-space: nowrap;
+				min-width: 100px;
+			}
+			
+			.action-buttons {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 5px;
+			}
+			
+			.action-buttons .btn {
+				flex: 1;
+				min-width: 70px;
+			}
+		}
+		/* Modales responsivos */
+		@media (max-width: 576px) {
+			.modal-dialog {
+				margin: 10px;
+			}
+			
+			.modal-content {
+				border-radius: 0;
+			}
+			
+			.login-role-btn {
+				width: 100%;
+				margin: 5px 0;
+			}
+			
+			.admin-topbar {
+				flex-direction: column;
+				align-items: flex-start;
+			}
+			
+			.admin-topbar > div {
+				margin-top: 10px;
+				width: 100%;
+				display: flex;
+				justify-content: space-between;
+			}
+		}
     </style>
 </head>
 <body>
@@ -714,9 +793,9 @@
                         <input type="hidden" id="loginRole" value="customer">
                         <input type="hidden" id="loginStoreId" value="">
                         <div class="mb-3">
-                            <label for="loginEmail" class="form-label">Correo electrónico</label>
-                            <input type="email" class="form-control" id="loginEmail" required>
-                        </div>
+							<label for="adminPassword" class="form-label">Contraseña</label>
+							<input type="password" class="form-control" id="adminPassword" placeholder="Ingresa tu contraseña" required>
+						</div>
                         <div class="mb-3">
                             <label for="loginPassword" class="form-label">Contraseña</label>
                             <input type="password" class="form-control" id="loginPassword" required>
@@ -1208,6 +1287,130 @@
 								<!-- Las comisiones se cargarán aquí -->
 							</tbody>
 						</table>
+					</div>
+				</div>
+				<!-- NUEVA: Platform Configuration Tab -->
+				<div id="adminPlatformTab" class="admin-tab-content">
+					<h5 class="mb-4">Configuración de la Plataforma</h5>
+					
+					<!-- Sección Hero/Banner Principal -->
+					<div class="card mb-4">
+						<div class="card-header bg-primary text-white">
+							<i class="fas fa-home"></i> Sección de Inicio (Hero)
+						</div>
+						<div class="card-body">
+							<form id="heroConfigForm">
+								<div class="mb-3">
+									<label for="heroTitle" class="form-label">Título Principal</label>
+									<input type="text" class="form-control" id="heroTitle" value="Bienvenido a PaTí">
+								</div>
+								<div class="mb-3">
+									<label for="heroSubtitle" class="form-label">Subtítulo</label>
+									<input type="text" class="form-control" id="heroSubtitle" value='"De todo" para todos los gustos y necesidades'>
+								</div>
+								<div class="mb-3">
+									<label for="heroImage" class="form-label">URL de Imagen de Fondo</label>
+									<input type="url" class="form-control" id="heroImage" value="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80">
+								</div>
+								<div class="row">
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="heroBtn1Text" class="form-label">Texto Botón 1</label>
+											<input type="text" class="form-control" id="heroBtn1Text" value="Entra a tu tienda ahora">
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="heroBtn2Text" class="form-label">Texto Botón 2</label>
+											<input type="text" class="form-control" id="heroBtn2Text" value="Monta tu tienda hoy">
+										</div>
+									</div>
+								</div>
+								<button type="button" class="btn btn-primary" onclick="saveHeroConfig()">
+									<i class="fas fa-save"></i> Guardar Cambios
+								</button>
+							</form>
+						</div>
+					</div>
+					
+					<!-- Sección "Nosotros" -->
+					<div class="card mb-4">
+						<div class="card-header bg-success text-white">
+							<i class="fas fa-info-circle"></i> Sección "Nosotros"
+						</div>
+						<div class="card-body">
+							<form id="aboutConfigForm">
+								<div class="mb-3">
+									<label for="aboutTitle" class="form-label">Título</label>
+									<input type="text" class="form-control" id="aboutTitle" value="Acerca de PaTí">
+								</div>
+								<div class="mb-3">
+									<label for="aboutDescription" class="form-label">Descripción Principal</label>
+									<textarea class="form-control" id="aboutDescription" rows="4">PaTí es tu plataforma de tiendas en línea donde encontrarás "de todo" para satisfacer todas tus necesidades. Nuestra misión es ofrecerte productos de calidad a precios accesibles con un servicio de entrega a domicilio rápido y confiable.</textarea>
+								</div>
+								<div class="mb-3">
+									<label for="deliveryPrice" class="form-label">Precio de Envío (menos de $50)</label>
+									<input type="text" class="form-control" id="deliveryPrice" value="$2.50">
+								</div>
+								<div class="mb-3">
+									<label for="freeDeliveryThreshold" class="form-label">Umbral para envío gratis</label>
+									<input type="text" class="form-control" id="freeDeliveryThreshold" value="$50">
+								</div>
+								<div class="mb-3">
+									<label for="deliveryHours" class="form-label">Horario de Entrega</label>
+									<input type="text" class="form-control" id="deliveryHours" value="lunes a sábado de 9:00 am a 8:00 pm">
+								</div>
+								<div class="mb-3">
+									<label for="amazedPersonText" class="form-label">Texto "Persona Asombrada"</label>
+									<textarea class="form-control" id="amazedPersonText" rows="3">¡Estoy asombrado! Nunca imaginé encontrar tantos productos de calidad en un solo lugar. PaTí tiene todo lo que necesito y a precios increíbles. ¡La entrega a domicilio es un servicio excelente!</textarea>
+								</div>
+								<button type="button" class="btn btn-success" onclick="saveAboutConfig()">
+									<i class="fas fa-save"></i> Guardar Cambios
+								</button>
+							</form>
+						</div>
+					</div>
+					
+					<!-- Sección de Contacto -->
+					<div class="card">
+						<div class="card-header bg-info text-white">
+							<i class="fas fa-address-book"></i> Información de Contacto
+						</div>
+						<div class="card-body">
+							<form id="contactConfigForm">
+								<div class="row">
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="contactAddress" class="form-label">Dirección</label>
+											<input type="text" class="form-control" id="contactConfigAddress" value="Av. Principal #123, Ciudad">
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="contactPhone" class="form-label">Teléfono</label>
+											<input type="text" class="form-control" id="contactConfigPhone" value="(123) 456-7890">
+										</div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="contactEmail" class="form-label">Email</label>
+											<input type="email" class="form-control" id="contactConfigEmail" value="info@pati.com">
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="contactHours" class="form-label">Horario de Atención</label>
+											<input type="text" class="form-control" id="contactConfigHours" value="Lunes a Sábado: 9:00 am - 8:00 pm">
+										</div>
+									</div>
+								</div>
+								<button type="button" class="btn btn-info" onclick="saveContactConfig()">
+									<i class="fas fa-save"></i> Guardar Cambios
+								</button>
+							</form>
+						</div>
 					</div>
 				</div>
 				<!-- Settings Tab -->
@@ -2401,6 +2604,10 @@
 					<div class="admin-menu-item" onclick="showAdminTab('adminCommissionsTab')">
 						<i class="fas fa-percentage"></i> Comisiones
 					</div>
+					<!-- NUEVO: Agregar pestaña de Configuración de Plataforma -->
+					<div class="admin-menu-item" onclick="showAdminTab('adminPlatformTab')">
+						<i class="fas fa-cogs"></i> Config. Plataforma
+					</div>
 					<div class="admin-menu-item" onclick="showAdminTab('adminReportsTab')">
 						<i class="fas fa-chart-bar"></i> Informes
 					</div>
@@ -2408,7 +2615,8 @@
 						<i class="fas fa-cog"></i> Configuración
 					</div>
 				`;
-			} else if (isAdmin) {
+			}	 
+			else if (isAdmin) {
 				menu.innerHTML = `
 					<div class="admin-menu-item active" onclick="showAdminTab('adminDashboardTab')">
 						<i class="fas fa-tachometer-alt"></i> Dashboard
@@ -2709,6 +2917,74 @@
                 showNotification('Comisión actualizada correctamente');
             }
         }
+		// Función para guardar configuración del Hero
+		function saveHeroConfig() {
+			const heroTitle = document.getElementById('heroTitle').value;
+			const heroSubtitle = document.getElementById('heroSubtitle').value;
+			const heroImage = document.getElementById('heroImage').value;
+			const heroBtn1Text = document.getElementById('heroBtn1Text').value;
+			const heroBtn2Text = document.getElementById('heroBtn2Text').value;
+			
+			// Actualizar en la página
+			const heroSection = document.querySelector('.hero-section');
+			if (heroSection) {
+				// Actualizar imagen de fondo
+				heroSection.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${heroImage}')`;
+			}
+			
+			// Aquí actualizarías los textos en el HTML
+			const heroHeading = document.querySelector('.hero-section h1');
+			if (heroHeading) heroHeading.textContent = heroTitle;
+			
+			const heroParagraph = document.querySelector('.hero-section p.lead');
+			if (heroParagraph) heroParagraph.textContent = heroSubtitle;
+			
+			// Actualizar botones
+			const heroButtons = document.querySelectorAll('.hero-section .btn');
+			if (heroButtons[0]) heroButtons[0].textContent = heroBtn1Text;
+			if (heroButtons[1]) heroButtons[1].textContent = heroBtn2Text;
+			
+			showNotification('Configuración de inicio guardada correctamente');
+		}
+
+		// Función para guardar configuración de "Nosotros"
+		function saveAboutConfig() {
+			const aboutTitle = document.getElementById('aboutTitle').value;
+			const aboutDescription = document.getElementById('aboutDescription').value;
+			const deliveryPrice = document.getElementById('deliveryPrice').value;
+			const freeDeliveryThreshold = document.getElementById('freeDeliveryThreshold').value;
+			const deliveryHours = document.getElementById('deliveryHours').value;
+			const amazedPersonText = document.getElementById('amazedPersonText').value;
+			
+			// Actualizar en la página
+			const aboutSection = document.querySelector('#aboutSection h2');
+			if (aboutSection) aboutSection.textContent = aboutTitle;
+			
+			// Actualizar descripción
+			const aboutDesc = document.querySelector('#aboutSection p');
+			if (aboutDesc) aboutDesc.textContent = aboutDescription;
+			
+			// Actualizar precios de envío
+			const deliveryPriceElement = document.querySelector('.delivery-price');
+			if (deliveryPriceElement) deliveryPriceElement.textContent = deliveryPrice;
+			
+			// Actualizar texto "persona asombrada"
+			const amazedPersonElement = document.querySelector('.amazed-person h3');
+			if (amazedPersonElement) amazedPersonElement.nextElementSibling.textContent = amazedPersonText;
+			
+			showNotification('Configuración de "Nosotros" guardada correctamente');
+		}
+
+		// Función para guardar configuración de contacto
+		function saveContactConfig() {
+			const address = document.getElementById('contactConfigAddress').value;
+			const phone = document.getElementById('contactConfigPhone').value;
+			const email = document.getElementById('contactConfigEmail').value;
+			const hours = document.getElementById('contactConfigHours').value;
+			
+			// Aquí actualizarías los elementos de contacto en la página
+			showNotification('Configuración de contacto guardada correctamente');
+		}
         function populateStoreSelects() {
             const selects = [
                 'productStore',
@@ -3379,13 +3655,18 @@
             }
         }
 		function loginAsOwner() {
-			isAdminLoggedIn = true;
-			currentUser = {
-				id: 1,
-				name: 'Propietario',
-				email: 'propietario@pati.com',
-				role: 'propietario'
-			};
+			const username = document.getElementById('adminUsername').value.trim();
+			const password = document.getElementById('adminPassword').value.trim();
+			
+			// Verifica que estas credenciales coincidan con las que configuraste
+			if (username === 'propietario' && password === 'propietario123') {
+				isAdminLoggedIn = true;
+				currentUser = {
+					id: 1, 
+					name: 'Propietario',
+					email: 'propietario@pati.com',
+					role: 'propietario'
+				};
 			document.getElementById('mainContent').classList.add('d-none');
 			document.getElementById('adminPanel').classList.remove('d-none');
 			document.getElementById('authButtons').classList.add('d-none');

@@ -185,7 +185,57 @@ async function loadInitialData() {
         ];
     }
 }
+// Función para cargar configuración del hero
+async function loadHeroSettings() {
+    try {
+        const result = await pb.collection('hero_settings').getFirstListItem('');
+        return result;
+    } catch (error) {
+        console.error('Error cargando hero settings:', error);
+        return null;
+    }
+}
 
+// Función para guardar configuración del hero
+async function saveHeroSettings(data) {
+    try {
+        // Primero obtén el registro existente
+        const existing = await pb.collection('hero_settings').getFirstListItem('');
+        
+        // Actualiza
+        const result = await pb.collection('hero_settings').update(existing.id, {
+            ...data,
+            updated_at: new Date().toISOString()
+        });
+        return result;
+    } catch (error) {
+        console.error('Error guardando hero settings:', error);
+        throw error;
+    }
+}
+
+// Funciones similares para about_settings y contact_settings
+async function loadAboutSettings() {
+    try {
+        return await pb.collection('about_settings').getFirstListItem('');
+    } catch (error) {
+        console.error('Error cargando about settings:', error);
+        return null;
+    }
+}
+
+async function saveAboutSettings(data) {
+    try {
+        const existing = await pb.collection('about_settings').getFirstListItem('');
+        return await pb.collection('about_settings').update(existing.id, {
+            ...data,
+            updated_at: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error guardando about settings:', error);
+        throw error;
+    }
+}
 // ====== FUNCIONES DE PRODUCTOS ======
 async function loadProducts() {
     try {
