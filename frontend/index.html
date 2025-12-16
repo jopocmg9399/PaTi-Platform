@@ -1594,63 +1594,113 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // ====== DATOS REALES DE TU EXCEL ======
-        const categories = [
-            { id: 'C001', name: 'Electrónica', description: '' },
-            { id: 'C002', name: 'Hogar', description: '' },
-            { id: 'C003', name: 'Útiles y Herramientas', description: '' },
-            { id: 'C004', name: 'Ropas', description: '' },
-            { id: 'C005', name: 'Calzados', description: '' },
-            { id: 'C006', name: 'Deportiva', description: '' }
-        ];
-        let stores = [
-            { id: 1, name: "TechZone", categoryId: 'C001', admin: "admin@techzone.com", status: "Activo", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "La mejor tecnología al mejor precio" },
-            { id: 2, name: "FashionStyle", categoryId: 'C004', admin: "admin@fashionstyle.com", status: "Activo", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Moda para todos los estilos" },
-            { id: 3, name: "HomeComfort", categoryId: 'C002', admin: "admin@homecomfort.com", status: "Inactivo", image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Todo para tu hogar" },
-            { id: 4, name: "SportsPro", categoryId: 'C006', admin: "admin@sportspro.com", status: "Activo", image: "https://images.unsplash.com/photo-1614632537197-38a17061c2bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Equipamiento deportivo profesional" }
-        ];
-        let products = [
-            { id: 1, name: "Smartphone XYZ", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 299.99, price2: 279.99, price3: 259.99, stock: 15, image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "El último smartphone con todas las características que necesitas." },
-            { id: 2, name: "Auriculares Bluetooth", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 49.99, price2: 44.99, price3: 39.99, stock: 30, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Auriculares inalámbricos con sonido de alta calidad." },
-            { id: 3, name: "Camiseta Deportiva", store: "FashionStyle", storeId: 2, categoryId: 'C004', price1: 24.99, price2: 22.99, price3: 19.99, stock: 50, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Camiseta cómoda y transpirable para actividades deportivas." },
-            { id: 4, name: "Juego de Sábanas", store: "HomeComfort", storeId: 3, categoryId: 'C002', price1: 39.99, price2: 36.99, price3: 34.99, stock: 20, image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Juego de sábanas de algodón egipcio para una noche de sueño placentero." },
-            { id: 5, name: "Balón de Fútbol", store: "SportsPro", storeId: 4, categoryId: 'C006', price1: 19.99, price2: 18.49, price3: 16.99, stock: 40, image: "https://images.unsplash.com/photo-1614632537197-38a17061c2bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Balón oficial para partidos de fútbol profesional." },
-            { id: 6, name: "Tablet ABC", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 199.99, price2: 189.99, price3: 179.99, stock: 10, image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Tablet perfecta para trabajo y entretenimiento." },
-            { id: 7, name: "Zapatillas Running", store: "SportsPro", storeId: 4, categoryId: 'C006', price1: 79.99, price2: 74.99, price3: 69.99, stock: 25, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Zapatillas diseñadas para corredores profesionales." },
-            { id: 8, name: "Cafetera Automática", store: "HomeComfort", storeId: 3, categoryId: 'C002', price1: 89.99, price2: 84.99, price3: 79.99, stock: 15, image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Cafetera programable para empezar el día con el mejor café." }
-        ];
-        const customers = [
-            { id: 1, name: "Juan Pérez", email: "juan@email.com", phone: "123-456-7890", storeId: 1, store: "TechZone", orders: 5 },
-            { id: 2, name: "María García", email: "maria@email.com", phone: "098-765-4321", storeId: 2, store: "FashionStyle", orders: 3 },
-            { id: 3, name: "Carlos López", email: "carlos@email.com", phone: "555-123-4567", storeId: 3, store: "HomeComfort", orders: 7 }
-        ];
-        const affiliates = [
-            { id: 1, name: "Ana Rodríguez", email: "ana@email.com", storeId: 1, store: "TechZone", commission: 15, sales: 24, status: "Activo" },
-            { id: 2, name: "Pedro Martínez", email: "pedro@email.com", storeId: 2, store: "FashionStyle", commission: 12, sales: 18, status: "Activo" },
-            { id: 3, name: "Laura Sánchez", email: "laura@email.com", storeId: 4, store: "SportsPro", commission: 10, sales: 12, status: "Inactivo" }
-        ];
-        const orders = [
-            { id: 1001, customer: "Juan Pérez", storeId: 1, store: "TechZone", date: "2023-05-15", total: 149.97, status: "Entregado" },
-            { id: 1002, customer: "María García", storeId: 2, store: "FashionStyle", date: "2023-05-16", total: 89.99, status: "En camino" },
-            { id: 1003, customer: "Carlos López", storeId: 3, store: "HomeComfort", date: "2023-05-17", total: 299.99, status: "Procesando" }
-        ];
-        // Comisiones por tienda
-        const storeCommissions = [
-            { id: 1, storeId: 1, storeName: "TechZone", commission: 15 },
-            { id: 2, storeId: 2, storeName: "FashionStyle", commission: 12 },
-            { id: 3, storeId: 3, storeName: "HomeComfort", commission: 10 },
-            { id: 4, storeId: 4, storeName: "SportsPro", commission: 18 }
-        ];
+       // ====== CONEXIÓN A POCKETBASE REAL ======
+		const PB_URL = 'https://pati-platform.onrender.com';  // ← TU BACKEND REAL
+		const pb = new PocketBase(PB_URL);
+
+		// Datos REALES desde PocketBase
+		let stores = [];
+		let products = [];
+		let categories = [];
+		let customers = [];
+		let affiliates = [];
+		let orders = [];
         let cart = [];
         let currentUser = null;
         let isAdminLoggedIn = false;
         let currentStoreId = null;
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFeaturedStores();
-            setupEventListeners();
-            initializeCharts();
-        });
+       document.addEventListener('DOMContentLoaded', async function() {
+			setupEventListeners();
+			initializeCharts();
+			
+			// Cargar datos REALES desde PocketBase
+			console.log('📱 Iniciando PaTí...');
+			await loadRealData();
+			console.log('🚀 Aplicación lista!');
+		});
+		// Función para cargar datos REALES desde PocketBase
+		async function loadRealData() {
+			try {
+				console.log('🔄 Cargando datos desde PocketBase...');
+				
+				// 1. Cargar categorías
+				try {
+					const categoriesResult = await pb.collection('categories').getList(1, 50);
+					categories = categoriesResult.items.map(item => ({
+						id: item.id,
+						name: item.name,
+						description: item.description || ''
+					}));
+					console.log(`✅ Categorías cargadas: ${categories.length}`);
+				} catch (error) {
+					console.warn('⚠️ No se pudieron cargar categorías, usando datos de ejemplo');
+					categories = [
+						{ id: 'C001', name: 'Electrónica', description: '' },
+						{ id: 'C002', name: 'Hogar', description: '' },
+						{ id: 'C003', name: 'Útiles y Herramientas', description: '' },
+						{ id: 'C004', name: 'Ropas', description: '' },
+						{ id: 'C005', name: 'Calzados', description: '' },
+						{ id: 'C006', name: 'Deportiva', description: '' }
+					];
+				}
+				
+				// 2. Cargar tiendas
+				try {
+					const storesResult = await pb.collection('stores').getList(1, 50);
+					stores = storesResult.items.map(item => ({
+						id: item.id,
+						name: item.name,
+						categoryId: item.category || 'C001',
+						admin: item.admin_email || 'admin@tienda.com',
+						status: item.status || 'Activo',
+						image: item.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+						description: item.description || 'Tienda en línea'
+					}));
+					console.log(`✅ Tiendas cargadas: ${stores.length}`);
+				} catch (error) {
+					console.warn('⚠️ No se pudieron cargar tiendas, usando datos de ejemplo');
+					stores = [
+						{ id: 1, name: "TechZone", categoryId: 'C001', admin: "admin@techzone.com", status: "Activo", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "La mejor tecnología" },
+						{ id: 2, name: "FashionStyle", categoryId: 'C004', admin: "admin@fashionstyle.com", status: "Activo", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Moda para todos" }
+					];
+				}
+				
+				// 3. Cargar productos
+				try {
+					const productsResult = await pb.collection('products').getList(1, 200);
+					products = productsResult.items.map(item => ({
+						id: item.id,
+						name: item.name,
+						store: item.store_name || 'Tienda General',
+						storeId: item.store || 1,
+						categoryId: item.category || 'C001',
+						price1: parseFloat(item.price1) || 0,
+						price2: parseFloat(item.price2) || 0,
+						price3: parseFloat(item.price3) || 0,
+						stock: parseInt(item.stock) || 0,
+						image: item.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+						description: item.description || ''
+					}));
+					console.log(`✅ Productos cargados: ${products.length}`);
+				} catch (error) {
+					console.warn('⚠️ No se pudieron cargar productos, usando datos de ejemplo');
+					products = [
+						{ id: 1, name: "Smartphone XYZ", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 299.99, price2: 279.99, price3: 259.99, stock: 15, image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Smartphone de última generación." }
+					];
+				}
+				
+				console.log('✅ Datos REALES cargados desde PocketBase');
+				
+				// Actualizar UI
+				if (typeof loadFeaturedStores === 'function') loadFeaturedStores();
+				if (typeof loadProducts === 'function') loadProducts();
+				
+			} catch (error) {
+				console.error('❌ Error grave cargando datos:', error);
+				alert('Error conectando con el servidor. Usando datos de ejemplo.');
+			}
+		}	
         function setupEventListeners() {
             // Admin login form
             const adminLoginForm = document.getElementById('adminLoginForm');
