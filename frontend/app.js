@@ -1,12 +1,10 @@
 // ====== CONFIGURACIÓN INICIAL ======
-// USAR SOLO UNA URL - Descomenta la que corresponda
 const PB_URL = 'https://pati-platform.onrender.com';  // Producción
 // const PB_URL = 'http://127.0.0.1:8090';  // Local - Solo para desarrollo
 
 console.log('Conectando a PocketBase:', PB_URL);
 
 // Instancia única de PocketBase
-const pb = new PocketBase(PB_URL);
 pb.autoCancellation(false);
 
 // Variables globales
@@ -158,42 +156,158 @@ async function userRegister(userData) {
 // ====== FUNCIONES DE CARGA INICIAL ======
 async function loadInitialData() {
     try {
-        // Cargar tiendas activas
-        stores = await pb.collection('stores').getFullList({
-            filter: 'status = "active"',
-            sort: '-created'
+        console.log('📦 Cargando datos iniciales...');
+        
+        // 1. CARGAR CATEGORÍAS PRIMERO (generalmente públicas)
+        try {
+            categories = await pb.collection('categories').getFullList({
+                sort: 'name'
+            });
+            console.log(`✅ Categorías cargadas: ${categories.length}`);
+        } catch (catError) {
+            console.warn('⚠️ No se pudieron cargar categorías:', catError.message);
+            categories = [
+                { id: 'C001', name: 'Electrónica' },
+                { id: 'C002', name: 'Hogar' },
+                { id: 'C003', name: 'Ropa' },
+                { id: 'C004', name: 'Deportes' }
+            ];
+        }
+        
+        // 2. CARGAR TIENDAS con filtro más permisivo
+        try {
+            // Intenta primero con filtro que no requiera superusuario
+            stores = await pb.collection('stores').getFullList({
+                filter: 'active = true', // Cambia 'status' por 'active' si es necesario
+                sort: '-created'
+            });
+            
+            // Si falla, intenta sin filtro
+            if (stores.length === 0) {
+                stores = await pb.collection('stores').getFullList({
+                    sort: '-created'
+                });
+            }
+            
+            console.log(`✅ Tiendas cargadas: ${stores.length}`);
+        } catch (storeError) {
+            console.warn('⚠️ No se pudieron cargar tiendas:', storeError.message);
+            
+            // Verifica si es error de permisos (403)
+            if (storeError.status === 403) {
+                console.log('🔐 Acceso denegado a tiendas - usando datos de demostración');
+                stores = [
+                    { 
+                        id: 'demo1', 
+                        name: "TechZone", 
+                        category: "C001", 
+                        status: "active", 
+                        image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
+                        description: "La mejor tecnología en electrónica",
+                        active: true
+                    },
+                    { 
+                        id: 'demo2', 
+                        name: "HomeStyle", 
+                        category: "C002", 
+                        status: "active", 
+                        image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
+                        description: "Todo para tu hogar",
+                        active: true
+                    }
+                ];
+            }
+        }
+        
+        // 3. CARGAR PRODUCTOS con manejo de errores específico
+        try {
+            // Primero intenta con filtro básico
+            products = await pb.collection('products').getFullList({
+                filter: 'available = true', // Cambia según tu esquema
+                sort: '-created',
+                limit: 50 // Limita resultados para no sobrecargar
+            });
+            
+            console.log(`✅ Productos cargados: ${products.length}`);
+            
+        } catch (productError) {
+            console.warn('⚠️ No se pudieron cargar productos:', productError.message);
+            
+            // Datos de demostración si hay error
+            products = [
+                { 
+                    id: 'prod1', 
+                    name: "Smartphone X10", 
+                    store: "demo1", 
+                    category: "C001", 
+                    price1: 299.99, 
+                    price2: 279.99, 
+                    price3: 259.99, 
+                    stock: 100, 
+                    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
+                    description: "Último modelo con cámara 108MP",
+                    available: true
+                },
+                { 
+                    id: 'prod2', 
+                    name: "Sofá Moderno", 
+                    store: "demo2", 
+                    category: "C002", 
+                    price1: 499.99, 
+                    price2: 449.99, 
+                    price3: 399.99, 
+                    stock: 50, 
+                    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
+                    description: "Sofá ergonómico de 3 plazas",
+                    available: true
+                }
+            ];
+        }
+        
+        console.log('✅ Datos iniciales cargados:', { 
+            stores: stores?.length || 0, 
+            categories: categories?.length || 0,
+            products: products?.length || 0 
         });
         
-        // Cargar categorías
-        categories = await pb.collection('categories').getFullList({
-            sort: 'name'
-        });
-        
-        // Cargar productos
-        products = await pb.collection('products').getFullList({
-            expand: 'store,category',
-            sort: '-created'
-        });
-        
-        console.log('Datos iniciales cargados:', { 
-            stores: stores.length, 
-            categories: categories.length,
-            products: products.length 
-        });
+        return { stores, categories, products };
         
     } catch (error) {
-        console.error('Error cargando datos iniciales:', error);
-        // Usar datos de prueba si hay error
-        stores = stores.length ? stores : [
-            { id: 'demo1', name: "TechZone", category: "C001", status: "active", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "La mejor tecnología" }
-        ];
-        categories = categories.length ? categories : [
-            { id: 'C001', name: 'Electrónica' },
-            { id: 'C002', name: 'Hogar' }
-        ];
-        products = products.length ? products : [
-            { id: 'prod1', name: "Producto Demo", store: "demo1", category: "C001", price1: 29.99, price2: 27.99, price3: 25.99, stock: 100, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Descripción de producto demo" }
-        ];
+        console.error('❌ Error general en loadInitialData:', error);
+        
+        // Fallback completo si todo falla
+        return {
+            stores: [
+                { 
+                    id: 'demo1', 
+                    name: "Tienda Demo", 
+                    category: "C001", 
+                    status: "active", 
+                    image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
+                    description: "Tienda de demostración",
+                    active: true
+                }
+            ],
+            categories: [
+                { id: 'C001', name: 'Electrónica' },
+                { id: 'C002', name: 'Hogar' }
+            ],
+            products: [
+                { 
+                    id: 'prod1', 
+                    name: "Producto Demo", 
+                    store: "demo1", 
+                    category: "C001", 
+                    price1: 29.99, 
+                    price2: 27.99, 
+                    price3: 25.99, 
+                    stock: 100, 
+                    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
+                    description: "Descripción de producto demo",
+                    available: true
+                }
+            ]
+        };
     }
 }
 

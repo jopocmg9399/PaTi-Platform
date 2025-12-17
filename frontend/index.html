@@ -643,7 +643,7 @@
                         <form id="contactForm">
                             <div class="mb-3">
 						<label for="loginPassword" class="form-label">Contraseña</label>
-						<input type="password" class="form-control" id="loginPassword" placeholder="Ingresa tu contraseña" required>
+						<input type="password" class="form-control" id="loginPassword1" placeholder="Ingresa tu contraseña" required>
 					</div>
                             <div class="mb-3">
                                 <input type="email" class="form-control" placeholder="Correo electrónico" required>
@@ -727,7 +727,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
 								<label for="loginPassword" class="form-label">Contraseña</label>
-								<input type="password" class="form-control" id="loginPassword" placeholder="Ingresa tu contraseña" required>
+								<input type="password" class="form-control" id="loginPassword2" placeholder="Ingresa tu contraseña" required>
 							</div>
                         </div>
                         <div class="col-md-6">
@@ -799,7 +799,7 @@
 						</div>
                         <div class="mb-3">
                             <label for="loginPassword" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="loginPassword" required>
+                            <input type="password" class="form-control" id="loginPassword3" required>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="rememberMe">
@@ -829,7 +829,7 @@
 					</div>
 					<div class="mb-3">
 						<label for="loginPassword" class="form-label">Contraseña</label>
-						<input type="password" class="form-control" id="loginPassword" placeholder="Ingresa tu contraseña" required>
+						<input type="password" class="form-control" id="loginPassword4" placeholder="Ingresa tu contraseña" required>
 					</div>
 					<div class="d-grid">
 						<button type="button" class="btn btn-primary" onclick="loginAsOwner()">Ingresar como Propietario</button>
@@ -3668,12 +3668,13 @@
 					email: 'propietario@pati.com',
 					role: 'propietario'
 				};
-			document.getElementById('mainContent').classList.add('d-none');
-			document.getElementById('adminPanel').classList.remove('d-none');
-			document.getElementById('authButtons').classList.add('d-none');
-			document.getElementById('logoutButton').classList.remove('d-none');
-			loadAdminData();
-			showNotification('Has iniciado sesión como Propietario');
+				document.getElementById('mainContent').classList.add('d-none');
+				document.getElementById('adminPanel').classList.remove('d-none');
+				document.getElementById('authButtons').classList.add('d-none');
+				document.getElementById('logoutButton').classList.remove('d-none');
+				loadAdminData();
+				showNotification('Has iniciado sesión como Propietario');
+			}
 		}
     </script>
     <!-- View Store Modal -->
