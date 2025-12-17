@@ -87,34 +87,26 @@ async function checkAuth() {
 async function userLogin(email, password, role, storeId) {
     try {
         console.log('=== INICIANDO LOGIN ===');
-        console.log('Email:', email);
-        console.log('Rol esperado:', role);
         
-        // 1. Autenticar con PocketBase
+        // 1. Autenticar
         const authData = await pb.collection('users').authWithPassword(email, password);
         currentUser = authData.record;
         
-        console.log('=== AUTENTICACIÓN EXITOSA ===');
-        console.log('Usuario:', currentUser);
-        console.log('Rol del usuario:', currentUser.role);
-        console.log('ID:', currentUser.id);
+        console.log('Login exitoso para:', currentUser.email, 'Rol:', currentUser.role);
         
         // 2. Verificar rol
         if (role && currentUser.role !== role) {
-            const msg = `Rol incorrecto. Esperabas: "${role}" pero tienes: "${currentUser.role}"`;
-            console.warn(msg);
-            alert(msg);
+            alert(`Rol incorrecto. Esperabas "${role}" pero tienes "${currentUser.role}"`);
             pb.authStore.clear();
             currentUser = null;
             return { success: false };
         }
         
-        // 3. Actualizar UI
-        updateUIForLoggedInUser();
+        // 3. CERRAR TODOS LOS MODALES ABIERTOS
+        closeAllModals();
         
-        // 4. Cerrar modal
-        const loginModal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
-        if (loginModal) loginModal.hide();
+        // 4. Actualizar UI
+        updateUIForLoggedInUser();
         
         // 5. Redirigir según rol
         if (currentUser.role === 'propietario') {
@@ -123,6 +115,12 @@ async function userLogin(email, password, role, storeId) {
             document.getElementById('adminPanel').classList.remove('d-none');
             loadAdminData();
             showNotification('Has iniciado sesión como Propietario');
+        } else if (currentUser.role === 'admin' || currentUser.role === 'dependiente') {
+            console.log('Redirigiendo a panel de administración');
+            document.getElementById('mainContent').classList.add('d-none');
+            document.getElementById('adminPanel').classList.remove('d-none');
+            loadAdminData();
+            showNotification(`Has iniciado sesión como ${currentUser.role}`);
         } else {
             console.log('Redirigiendo a sección productos');
             showSection('products');
@@ -132,29 +130,45 @@ async function userLogin(email, password, role, storeId) {
         return { success: true, user: currentUser };
         
     } catch (error) {
-        console.error('=== ERROR EN LOGIN ===');
-        console.error('Tipo de error:', error.constructor.name);
-        console.error('Mensaje:', error.message);
-        console.error('Status:', error.status);
-        console.error('Datos:', error.data);
+        console.error('Error en login:', error);
         
         let errorMsg = 'Error desconocido';
-        
-        if (error.status === 400) {
-            errorMsg = 'Email o contraseña incorrectos';
-        } else if (error.status === 0) {
-            errorMsg = 'Error de conexión. Verifica tu internet.';
-        } else if (error.message.includes('Failed to fetch')) {
-            errorMsg = 'No se puede conectar al servidor. Verifica la URL: ' + PB_URL;
-        } else {
-            errorMsg = error.message || 'Error al iniciar sesión';
-        }
+        if (error.status === 400) errorMsg = 'Email o contraseña incorrectos';
+        else if (error.status === 0) errorMsg = 'Error de conexión';
+        else errorMsg = error.message || 'Error al iniciar sesión';
         
         alert('Error: ' + errorMsg);
-        console.error('Error completo:', error);
-        
         return { success: false, error: error.message };
     }
+}
+
+// Función auxiliar para cerrar todos los modales
+function closeAllModals() {
+    console.log('Cerrando todos los modales...');
+    
+    // Método 1: Usar Bootstrap para cerrar modales visibles
+    const modals = document.querySelectorAll('.modal.show');
+    modals.forEach(modal => {
+        const bsModal = bootstrap.Modal.getInstance(modal);
+        if (bsModal) {
+            bsModal.hide();
+            console.log('Modal cerrado:', modal.id);
+        }
+    });
+    
+    // Método 2: Eliminar backdrop manualmente
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(backdrop => {
+        backdrop.remove();
+        console.log('Backdrop eliminado');
+    });
+    
+    // Método 3: Restaurar el body
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    
+    console.log('Todos los modales cerrados');
 }
 
 // ====== CREACIÓN DE TIENDAS CON AUTORIZACIÓN ======
@@ -303,31 +317,49 @@ window.showStoreLogin = async (storeId) => {
     }
 };
 
+// La forma más limpia usando eventos de Bootstrap
 window.loginAsOwner = async function() {
     const username = document.getElementById('adminUsername').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
     
-    // Validación simple
     if (!username || !password) {
         alert('Por favor, ingresa usuario y contraseña');
         return;
     }
     
-    console.log('Intentando login como propietario:', username);
-    
-    // Usar el email correcto para propietario
     const email = username === 'propietario' ? 'propietario@pati.com' : username;
     
     try {
+        // Obtener el elemento modal
+        const modalElement = document.getElementById('adminLoginModal');
+        
+        // Crear una promesa que se resuelva cuando el modal se oculte
+        const modalClosed = new Promise((resolve) => {
+            modalElement.addEventListener('hidden.bs.modal', function() {
+                console.log('Modal hidden event fired');
+                resolve();
+            }, { once: true }); // { once: true } asegura que el listener se ejecute solo una vez
+        });
+        
+        // Intentar login
         const result = await userLogin(email, password, 'propietario', null);
         
-        if (!result.success) {
-            // Si falla, mostrar credenciales de prueba
-            alert(`Credenciales de prueba:\nUsuario: propietario\nContraseña: propietario123`);
+        if (result.success) {
+            // Obtener instancia del modal y ocultarlo
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+                console.log('Modal hide() llamado');
+                
+                // Esperar a que el modal realmente se cierre
+                await modalClosed;
+                console.log('Modal completamente cerrado');
+            }
         }
+        
     } catch (error) {
-        console.error('Error en loginAsOwner:', error);
-        alert('Error de conexión. Intenta de nuevo.');
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
     }
 };
 
