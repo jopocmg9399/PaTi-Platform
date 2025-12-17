@@ -1,39 +1,31 @@
 // ====== CONFIGURACIÓN INICIAL ======
-// AL INICIO de app.js:
-import PocketBase from 'https://unpkg.com/pocketbase@latest/dist/pocketbase.es.mjs';
+// pb ya está definido globalmente desde index.html
+// Asegurarnos de que PB_URL está definida
+if (typeof PB_URL === 'undefined') {
+    console.warn('PB_URL no definida, usando valor por defecto');
+    window.PB_URL = 'https://pati-platform.onrender.com';
+}
 
-const PB_URL = 'https://pati-platform.onrender.com';  // Producción
-const pb = new PocketBase(PB_URL);
-// const PB_URL = 'http://127.0.0.1:8090';  // Local - Solo para desarrollo
+// Verificar que pb existe
+if (typeof pb === 'undefined') {
+    console.error('ERROR: PocketBase no está inicializado. Creando instancia...');
+    window.pb = new PocketBase(PB_URL);
+}
 
 console.log('Conectando a PocketBase:', PB_URL);
 
 // Instancia única de PocketBase
 pb.autoCancellation(false);
 
-// Variables globales
-let currentUser = null;
-let currentStoreId = null;
-let currentStored = null;
-let currentStore = null;
-let cart = [];
-let stores = []; // Cache local de tiendas
-let categories = []; // Cache local de categorías
-let products = []; // Cache local de productos
-
-// Inicialización
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('App iniciada, conectando a:', PB_URL);
-    checkAuth();
-    loadInitialData();
-    setupEventListeners();
-    
-    // Inicializar carrito
-    updateCart();
-    
-    // Cargar tiendas destacadas
-    loadFeaturedStores();
-});
+// Variables globales (sin redeclarar si ya existen)
+if (typeof currentUser === 'undefined') window.currentUser = null;
+if (typeof currentStoreId === 'undefined') window.currentStoreId = null;
+if (typeof currentStored === 'undefined') window.currentStored = null;
+if (typeof currentStore === 'undefined') window.currentStore = null;
+if (typeof cart === 'undefined') window.cart = [];
+if (typeof stores === 'undefined') window.stores = []; // Cache local de tiendas
+if (typeof categories === 'undefined') window.categories = []; // Cache local de categorías
+if (typeof products === 'undefined') window.products = []; // Cache local de productos
 
 // ====== FUNCIONES DE AUTENTICACIÓN ======
 async function checkAuth() {
@@ -166,9 +158,10 @@ async function loadInitialData() {
         
         // 1. CARGAR CATEGORÍAS PRIMERO (generalmente públicas)
         try {
-            categories = await pb.collection('categories').getFullList({
+            const categoriesResult = await pb.collection('categories').getFullList({
                 sort: 'name'
             });
+            categories = categoriesResult;
             console.log(`✅ Categorías cargadas: ${categories.length}`);
         } catch (catError) {
             console.warn('⚠️ No se pudieron cargar categorías:', catError.message);
@@ -184,7 +177,7 @@ async function loadInitialData() {
         try {
             // Intenta primero con filtro que no requiera superusuario
             stores = await pb.collection('stores').getFullList({
-                filter: 'active = true', // Cambia 'status' por 'active' si es necesario
+                filter: 'active = true',
                 sort: '-created'
             });
             
@@ -229,9 +222,9 @@ async function loadInitialData() {
         try {
             // Primero intenta con filtro básico
             products = await pb.collection('products').getFullList({
-                filter: 'available = true', // Cambia según tu esquema
+                filter: 'available = true',
                 sort: '-created',
-                limit: 50 // Limita resultados para no sobrecargar
+                limit: 50
             });
             
             console.log(`✅ Productos cargados: ${products.length}`);
@@ -354,25 +347,10 @@ async function loadFeaturedStores() {
         featuredStores.innerHTML += storeCard;
     });
 }
-function showStoreSelection() {
-    console.log('Mostrando selección de tienda');
-    // Tu código aquí
-}
 
-function showAdminLogin() {
-    console.log('Mostrando login admin');
-    // Tu código aquí
-}
-
-function showCreateStoreForm() {
-    console.log('Mostrando formulario de tienda');
-    // Tu código aquí
-}
 // ====== FUNCIONES DE PRODUCTOS ======
 async function loadProducts(storeId = null) {
-    // Si storeId es null, usa un valor por defecto
-    currentStored = storeId || 'default-store-id';
-	try {
+    try {
         const productsList = document.getElementById('productsList');
         if (!productsList) return;
         
@@ -829,25 +807,48 @@ function setupEventListeners() {
     }
 }
 
-// ====== EXPORTAR FUNCIONES AL ÁMBITO GLOBAL ======
+// ====== INICIALIZACIÓN ======
+function initializeApp() {
+    console.log('App iniciada, conectando a:', PB_URL);
+    checkAuth();
+    loadInitialData();
+    setupEventListeners();
+    
+    // Inicializar carrito
+    updateCart();
+    
+    // Cargar tiendas destacadas
+    loadFeaturedStores();
+}
+
+// ====== FUNCIONES GLOBALES (para onclick en HTML) ======
 window.showSection = showSection;
-window.showStoreSelection = () => showSection('storeSelection');
-window.showCreateStoreForm = () => showSection('createStore');
-window.showStoreLogin = (storeId) => {
+window.showStoreSelection = function() {
+    console.log('Mostrando selección de tienda');
+    showSection('storeSelection');
+};
+window.showCreateStoreForm = function() {
+    console.log('Mostrando formulario de tienda');
+    showSection('createStore');
+};
+window.showStoreLogin = function(storeId) {
     currentStoreId = storeId;
     const store = stores.find(s => s.id === storeId);
     if (store) {
-        document.getElementById('storeLoginName').textContent = store.name;
+        const storeLoginNameElement = document.getElementById('storeLoginName');
+        if (storeLoginNameElement) {
+            storeLoginNameElement.textContent = store.name;
+        }
     }
     showSection('storeLogin');
 };
-window.showLoginForm = (role = 'customer') => {
+window.showLoginForm = function(role = 'customer') {
     document.getElementById('loginRole').value = role;
     document.getElementById('loginStoreId').value = currentStoreId || '';
     const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
     loginModal.show();
 };
-window.showRegisterForm = (role = 'customer') => {
+window.showRegisterForm = function(role = 'customer') {
     document.getElementById('registerRole').value = role;
     document.getElementById('registerStoreId').value = currentStoreId || '';
     
@@ -859,14 +860,15 @@ window.showRegisterForm = (role = 'customer') => {
     const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
     registerModal.show();
 };
-window.showAdminLogin = () => {
+window.showAdminLogin = function() {
+    console.log('Mostrando login admin');
     const adminLoginModal = document.getElementById('adminLoginModal');
     if (adminLoginModal) {
         const modal = new bootstrap.Modal(adminLoginModal);
         modal.show();
     }
 };
-window.loginAsOwner = () => {
+window.loginAsOwner = function() {
     const username = document.getElementById('adminUsername').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
     
@@ -883,5 +885,17 @@ window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.checkout = checkout;
 window.filterProductsAdvanced = filterProductsAdvanced;
+window.loadProducts = loadProducts;
+window.filterStores = function() {
+    // Función temporal
+    console.log('Filtrando tiendas...');
+};
+
+// ====== INICIALIZAR APP ======
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
 
 console.log('app.js cargado correctamente');
