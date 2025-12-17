@@ -20,7 +20,53 @@ document.addEventListener('DOMContentLoaded', function() {
     loadInitialData();
     setupEventListeners();
 });
+// ====== CREAR USUARIO PROPIETARIO SI NO EXISTE ======
+async function createOwnerIfNotExists() {
+    try {
+        // Verificar si el usuario propietario existe
+        const existing = await pb.collection('users').getFirstListItem('email="propietario@pati.com"');
+        console.log('Usuario propietario ya existe:', existing.email);
+    } catch (error) {
+        if (error.status === 404) {
+            console.log('Creando usuario propietario...');
+            try {
+                const ownerData = {
+                    "username": "propietario",
+                    "email": "propietario@pati.com",
+                    "emailVisibility": true,
+                    "password": "propietario123",
+                    "passwordConfirm": "propietario123",
+                    "role": "propietario",
+                    "profile": JSON.stringify({
+                        "nombre": "Propietario PaTí",
+                        "telefono": "(123) 456-7890"
+                    })
+                };
+                
+                const owner = await pb.collection('users').create(ownerData);
+                console.log('Usuario propietario creado:', owner.email);
+            } catch (createError) {
+                console.error('Error creando propietario:', createError);
+            }
+        }
+    }
+}
 
+// Llamar esta función después de inicializar PocketBase
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('App iniciada, conectando a:', PB_URL);
+    
+    // Inicializar PocketBase
+    window.pb = new PocketBase(PB_URL);
+    pb.autoCancellation(false);
+    
+    // Crear usuario propietario si no existe
+    await createOwnerIfNotExists();
+    
+    checkAuth();
+    loadInitialData();
+    setupEventListeners();
+});
 // ====== FUNCIONES DE AUTENTICACIÓN MEJORADAS ======
 async function checkAuth() {
     try {
@@ -40,54 +86,45 @@ async function checkAuth() {
 
 async function userLogin(email, password, role, storeId) {
     try {
-        console.log('Intentando login:', { email, role, storeId });
+        console.log('=== INICIANDO LOGIN ===');
+        console.log('Email:', email);
+        console.log('Rol esperado:', role);
         
         // 1. Autenticar con PocketBase
         const authData = await pb.collection('users').authWithPassword(email, password);
         currentUser = authData.record;
         
-        console.log('Usuario autenticado:', currentUser);
+        console.log('=== AUTENTICACIÓN EXITOSA ===');
+        console.log('Usuario:', currentUser);
+        console.log('Rol del usuario:', currentUser.role);
+        console.log('ID:', currentUser.id);
         
-        // 2. Verificar rol si se especificó
+        // 2. Verificar rol
         if (role && currentUser.role !== role) {
-            alert(`Tu cuenta no tiene el rol de "${role}". Tu rol es: ${currentUser.role}`);
+            const msg = `Rol incorrecto. Esperabas: "${role}" pero tienes: "${currentUser.role}"`;
+            console.warn(msg);
+            alert(msg);
             pb.authStore.clear();
             currentUser = null;
             return { success: false };
         }
         
-        // 3. Guardar storeId si existe y el usuario es de una tienda
-        if (storeId && ['admin', 'dependiente', 'affiliate'].includes(currentUser.role)) {
-            currentStoreId = storeId;
-        }
-        
-        // 4. Actualizar UI
+        // 3. Actualizar UI
         updateUIForLoggedInUser();
         
-        // 5. Cerrar modal si existe
-        const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+        // 4. Cerrar modal
+        const loginModal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
         if (loginModal) loginModal.hide();
         
-        // 6. Redirigir según rol
+        // 5. Redirigir según rol
         if (currentUser.role === 'propietario') {
+            console.log('Redirigiendo a panel de propietario');
             document.getElementById('mainContent').classList.add('d-none');
             document.getElementById('adminPanel').classList.remove('d-none');
             loadAdminData();
             showNotification('Has iniciado sesión como Propietario');
-        } else if (currentUser.role === 'admin') {
-            // Admin de tienda
-            document.getElementById('mainContent').classList.add('d-none');
-            document.getElementById('adminPanel').classList.remove('d-none');
-            loadAdminData();
-            showNotification(`Has iniciado sesión como Administrador de tienda`);
-        } else if (currentUser.role === 'dependiente') {
-            // Dependiente
-            document.getElementById('mainContent').classList.add('d-none');
-            document.getElementById('adminPanel').classList.remove('d-none');
-            loadAdminData();
-            showNotification('Has iniciado sesión como Dependiente');
         } else {
-            // Cliente o Afiliado
+            console.log('Redirigiendo a sección productos');
             showSection('products');
             showNotification('Has iniciado sesión correctamente');
         }
@@ -95,16 +132,26 @@ async function userLogin(email, password, role, storeId) {
         return { success: true, user: currentUser };
         
     } catch (error) {
-        console.error('Error en login:', error);
+        console.error('=== ERROR EN LOGIN ===');
+        console.error('Tipo de error:', error.constructor.name);
+        console.error('Mensaje:', error.message);
+        console.error('Status:', error.status);
+        console.error('Datos:', error.data);
         
-        // Mensajes de error más específicos
+        let errorMsg = 'Error desconocido';
+        
         if (error.status === 400) {
-            alert('Email o contraseña incorrectos');
+            errorMsg = 'Email o contraseña incorrectos';
         } else if (error.status === 0) {
-            alert('Error de conexión. Verifica tu internet.');
+            errorMsg = 'Error de conexión. Verifica tu internet.';
+        } else if (error.message.includes('Failed to fetch')) {
+            errorMsg = 'No se puede conectar al servidor. Verifica la URL: ' + PB_URL;
         } else {
-            alert('Error al iniciar sesión: ' + error.message);
+            errorMsg = error.message || 'Error al iniciar sesión';
         }
+        
+        alert('Error: ' + errorMsg);
+        console.error('Error completo:', error);
         
         return { success: false, error: error.message };
     }
@@ -256,12 +303,32 @@ window.showStoreLogin = async (storeId) => {
     }
 };
 
-window.loginAsOwner = () => {
+window.loginAsOwner = async function() {
     const username = document.getElementById('adminUsername').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
     
-    // Usar la misma función de login con credenciales del propietario
-    userLogin(username, password, 'propietario', null);
+    // Validación simple
+    if (!username || !password) {
+        alert('Por favor, ingresa usuario y contraseña');
+        return;
+    }
+    
+    console.log('Intentando login como propietario:', username);
+    
+    // Usar el email correcto para propietario
+    const email = username === 'propietario' ? 'propietario@pati.com' : username;
+    
+    try {
+        const result = await userLogin(email, password, 'propietario', null);
+        
+        if (!result.success) {
+            // Si falla, mostrar credenciales de prueba
+            alert(`Credenciales de prueba:\nUsuario: propietario\nContraseña: propietario123`);
+        }
+    } catch (error) {
+        console.error('Error en loginAsOwner:', error);
+        alert('Error de conexión. Intenta de nuevo.');
+    }
 };
 
 // Modificar la función createStore del index.html para usar autorización
