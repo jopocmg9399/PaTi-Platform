@@ -1,5 +1,9 @@
 // ====== CONFIGURACIÓN INICIAL ======
+// AL INICIO de app.js:
+import PocketBase from 'https://unpkg.com/pocketbase@latest/dist/pocketbase.es.mjs';
+
 const PB_URL = 'https://pati-platform.onrender.com';  // Producción
+const pb = new PocketBase(PB_URL);
 // const PB_URL = 'http://127.0.0.1:8090';  // Local - Solo para desarrollo
 
 console.log('Conectando a PocketBase:', PB_URL);
@@ -10,6 +14,8 @@ pb.autoCancellation(false);
 // Variables globales
 let currentUser = null;
 let currentStoreId = null;
+let currentStored = null;
+let currentStore = null;
 let cart = [];
 let stores = []; // Cache local de tiendas
 let categories = []; // Cache local de categorías
@@ -348,10 +354,25 @@ async function loadFeaturedStores() {
         featuredStores.innerHTML += storeCard;
     });
 }
+function showStoreSelection() {
+    console.log('Mostrando selección de tienda');
+    // Tu código aquí
+}
 
+function showAdminLogin() {
+    console.log('Mostrando login admin');
+    // Tu código aquí
+}
+
+function showCreateStoreForm() {
+    console.log('Mostrando formulario de tienda');
+    // Tu código aquí
+}
 // ====== FUNCIONES DE PRODUCTOS ======
-async function loadProducts() {
-    try {
+async function loadProducts(storeId = null) {
+    // Si storeId es null, usa un valor por defecto
+    currentStored = storeId || 'default-store-id';
+	try {
         const productsList = document.getElementById('productsList');
         if (!productsList) return;
         
