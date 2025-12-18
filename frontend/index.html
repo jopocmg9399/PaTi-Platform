@@ -1926,6 +1926,10 @@
             registerModal.show();
         }
         function showAdminLogin() {
+			// Limpiar campos antes de mostrar
+			document.getElementById('adminUsername').value = '';
+			document.getElementById('adminPassword').value = '';
+			
 			const adminLoginModal = document.getElementById('adminLoginModal');
 			if (adminLoginModal) {
 				const modal = new bootstrap.Modal(adminLoginModal);
@@ -3426,6 +3430,69 @@
                 });
             }
         }
+		// FUNCIÓN PARA LOGIN DE PROPIETARIO - VERSIÓN SIMPLIFICADA Y FUNCIONAL
+		async function loginAsPropietario() {
+			const username = document.getElementById('adminUsername').value.trim();
+			const password = document.getElementById('adminPassword').value.trim();
+			
+			console.log('Intentando login como propietario:', username);
+			
+			if (!username || !password) {
+				alert('❌ Por favor, ingresa usuario y contraseña');
+				return;
+			}
+			
+			// Validar credenciales
+			const email = username === 'propietario' ? 'propietario@pati.com' : username;
+			const passwordCorrect = (username === 'propietario' && password === 'propietario123');
+			
+			if (passwordCorrect) {
+				try {
+					// 1. Cerrar el modal usando Bootstrap
+					const modalElement = document.getElementById('adminLoginModal');
+					const modalInstance = bootstrap.Modal.getInstance(modalElement);
+					if (modalInstance) {
+						modalInstance.hide();
+					}
+					
+					// 2. Limpiar los campos
+					document.getElementById('adminUsername').value = '';
+					document.getElementById('adminPassword').value = '';
+					
+					// 3. Establecer usuario como propietario
+					isAdminLoggedIn = true;
+					currentUser = {
+						id: 1,
+						name: 'Propietario',
+						email: email,
+						role: 'propietario'
+					};
+					
+					// 4. Actualizar UI
+					document.getElementById('mainContent').classList.add('d-none');
+					document.getElementById('adminPanel').classList.remove('d-none');
+					document.getElementById('authButtons').classList.add('d-none');
+					document.getElementById('logoutButton').classList.remove('d-none');
+					
+					// 5. Cargar datos del admin
+					if (typeof loadAdminData === 'function') {
+						loadAdminData();
+					}
+					
+					console.log('✅ Login exitoso como propietario');
+					showNotification('Has iniciado sesión como Propietario');
+					
+				} catch (error) {
+					console.error('Error en login:', error);
+					alert('Error al iniciar sesión: ' + error.message);
+				}
+			} else {
+				alert('❌ Credenciales incorrectas\nUsuario: propietario\nContraseña: propietario123');
+				// Limpiar solo la contraseña
+				document.getElementById('adminPassword').value = '';
+				document.getElementById('adminPassword').focus();
+			}
+		}
 		function loginAsOwner() {
 			isAdminLoggedIn = true;
 			currentUser = {

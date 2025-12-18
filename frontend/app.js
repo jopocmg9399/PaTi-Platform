@@ -318,50 +318,7 @@ window.showStoreLogin = async (storeId) => {
 };
 
 // La forma más limpia usando eventos de Bootstrap
-window.loginAsOwner = async function() {
-    const username = document.getElementById('adminUsername').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
-    
-    console.log('Login como propietario...');
-    
-    if (!username || !password) {
-        alert('Por favor, ingresa usuario y contraseña');
-        return;
-    }
-    
-    const email = username === 'propietario' ? 'propietario@pati.com' : username;
-    
-    try {
-        // PRIMERO CERRAR EL MODAL (método simple)
-        const modal = document.getElementById('adminLoginModal');
-        if (modal) {
-            modal.style.display = 'none';
-            modal.classList.remove('show');
-        }
-        
-        // Eliminar fondo oscuro
-        const backdrop = document.querySelector('.modal-backdrop');
-        if (backdrop) backdrop.remove();
-        
-        // Restaurar página
-        document.body.classList.remove('modal-open');
-        document.body.style.overflow = 'auto';
-        
-        // LUEGO HACER LOGIN
-        const result = await userLogin(email, password, 'propietario', null);
-        
-        if (!result.success) {
-            // Si falla, mostrar modal de nuevo
-            showAdminLogin();
-        }
-        
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error: ' + error.message);
-        // Mostrar modal de nuevo si hay error
-        showAdminLogin();
-    }
-};
+
 
 // FUNCIÓN PARA CERRAR MODAL COMPLETAMENTE
 function closeModalCompletely(modalId) {
