@@ -469,7 +469,7 @@
                     <h1 class="display-4 fw-bold">Bienvenido a PaTí</h1>
                     <p class="lead">"De todo" para todos los gustos y necesidades</p>
                     <button class="btn btn-primary btn-lg me-3" onclick="showStoreSelection()">Entra a tu tienda ahora</button>
-                    <button class="btn btn-outline-light btn-lg" onclick="checkCreateStorePermission()">Monta tu tienda hoy </button>
+                    <button class="btn btn-outline-light btn-lg" onclick="showCreateStoreForm()">Monta tu tienda hoy</button>
                 </div>
             </div>
             <div class="container mb-5">
@@ -515,9 +515,9 @@
 				</div>
 				<div class="col-md-3">
 					<div class="input-group">
-						<input type="number" class="form-control" id="priceMin" placeholder="$ Mín" onchange="filterProductsAdvanced()">
+						<input type="number" class="form-control" id="priceMin" placeholder="Precio Mín" onchange="filterProductsAdvanced()">
 						<span class="input-group-text">-</span>
-						<input type="number" class="form-control" id="priceMax" placeholder="$ Máx" onchange="filterProductsAdvanced()">
+						<input type="number" class="form-control" id="priceMax" placeholder="Precio Máx" onchange="filterProductsAdvanced()">
 					</div>
 				</div>
 			</div>
@@ -734,7 +734,7 @@
             </div>
         </div>
     </div>
-	<!-- Admin Login Modal -->
+    <!-- Admin Login Modal - CORREGIDO -->
 	<div class="modal fade" id="adminLoginModal" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -743,31 +743,21 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
 				<div class="modal-body">
-					<form id="adminLoginForm" onsubmit="return handleAdminLogin(event)">
-						<div class="mb-3">
-							<label for="adminUsername" class="form-label">Usuario o Email</label>
-							<input type="text" class="form-control" id="adminUsername" placeholder="propietario" required>
-						</div>
-						<div class="mb-3">
-							<label for="adminPassword" class="form-label">Contraseña</label>
-							<input type="password" class="form-control" id="adminPassword" placeholder="propietario123" required>
-						</div>
-						<div class="d-grid gap-2">
-							<button type="submit" class="btn btn-primary">
-								<i class="fas fa-sign-in-alt"></i> Ingresar como Propietario
-							</button>
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-								Cancelar
-							</button>
-						</div>
-					</form>
+					<div class="mb-3">
+						<label for="adminUsername" class="form-label">Usuario</label>
+						<input type="text" class="form-control" id="adminUsername" placeholder="propietario" required>
+					</div>
+					<div class="mb-3">
+						<label for="adminPassword" class="form-label">Contraseña</label>
+						<input type="password" class="form-control" id="adminPassword" placeholder="propietario123" required>
+					</div>
+					<div class="d-grid">
+						<button type="button" class="btn btn-primary" onclick="loginAsOwner()">Ingresar como Propietario</button>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	
-	
     <!-- Register Modal -->
     <div class="modal fade" id="registerModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -1621,31 +1611,6 @@
         let currentStoreId = null;
         // Initialize the application
        document.addEventListener('DOMContentLoaded', async function() {
-		 // Verificar si ya hay una sesión activa
-			if (pb.authStore.isValid) {
-				try {
-					// Actualizar token si es necesario
-					await pb.collection('users').authRefresh();
-					currentUser = {
-						id: pb.authStore.model.id,
-						name: pb.authStore.model.name || pb.authStore.model.username,
-						email: pb.authStore.model.email,
-						role: pb.authStore.model.role
-					};
-					isAdminLoggedIn = currentUser.role === 'propietario' || currentUser.role === 'admin';
-					
-					// Actualizar UI según el rol
-					if (isAdminLoggedIn) {
-						document.getElementById('mainContent').classList.add('d-none');
-						document.getElementById('adminPanel').classList.remove('d-none');
-						document.getElementById('logoutButton').classList.remove('d-none');
-						loadAdminData();
-					}
-				} catch (error) {
-					console.log('Sesión expirada o inválida:', error);
-					pb.authStore.clear();
-				}
-			}		
 			setupEventListeners();
 			initializeCharts();
 			
@@ -1912,15 +1877,14 @@
             const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
             registerModal.show();
         }
-		 function showAdminLogin() {
-			// Limpiar campos
-			document.getElementById('adminUsername').value = '';
-			document.getElementById('adminPassword').value = '';
-			
-			// Mostrar modal
-			const modal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
-			modal.show();
-		}        function loadFeaturedStores() {
+        function showAdminLogin() {
+			const adminLoginModal = document.getElementById('adminLoginModal');
+			if (adminLoginModal) {
+				const modal = new bootstrap.Modal(adminLoginModal);
+				modal.show();
+			}
+		}
+        function loadFeaturedStores() {
             const featuredStores = document.getElementById('featuredStores');
             featuredStores.innerHTML = '';
             const selected = stores.slice(0, 4);
@@ -2349,25 +2313,22 @@
 				loadAdminData();
 				showNotification('Has iniciado sesión como Propietario');
 			} else {
-				alert('Credenciales incorrectas');
+				alert('Credenciales incorrectas.\nUsuario: propietario\nContraseña: propietario123');
 			}
 		}
         function logout() {
-			// Limpiar TODO
-			currentUser = null;
-			isAdminLoggedIn = false;
-			currentStoreId = null;
-			cart = [];
-			
-			// Restaurar vista principal
-			document.getElementById('mainContent').classList.remove('d-none');
-			document.getElementById('adminPanel').classList.add('d-none');
-			document.getElementById('logoutButton').classList.add('d-none');
-			
-			showSection('home');
-			updateCart();
-			showNotification('Sesión cerrada correctamente');
-		}
+            currentUser = null;
+            isAdminLoggedIn = false;
+            currentStoreId = null;
+            cart = [];
+            updateCart();
+            document.getElementById('mainContent').classList.remove('d-none');
+            document.getElementById('adminPanel').classList.add('d-none');
+            document.getElementById('authButtons').classList.add('d-none');
+            document.getElementById('logoutButton').classList.add('d-none');
+            showSection('home');
+            showNotification('Has cerrado sesión correctamente');
+        }
         function createStore() {
             const storeName = document.getElementById('storeName').value;
             const storeCategory = document.getElementById('storeCategory').value;
@@ -3417,69 +3378,6 @@
                 });
             }
         }
-		// FUNCIÓN PARA LOGIN DE PROPIETARIO - VERSIÓN SIMPLIFICADA Y FUNCIONAL
-		async function loginAsPropietario() {
-			const username = document.getElementById('adminUsername').value.trim();
-			const password = document.getElementById('adminPassword').value.trim();
-			
-			console.log('Intentando login como propietario:', username);
-			
-			if (!username || !password) {
-				alert('❌ Por favor, ingresa usuario y contraseña');
-				return;
-			}
-			
-			// Validar credenciales
-			const email = username === 'propietario' ? 'propietario@pati.com' : username;
-			const passwordCorrect = (username === 'propietario' && password === 'propietario123');
-			
-			if (passwordCorrect) {
-				try {
-					// 1. Cerrar el modal usando Bootstrap
-					const modalElement = document.getElementById('adminLoginModal');
-					const modalInstance = bootstrap.Modal.getInstance(modalElement);
-					if (modalInstance) {
-						modalInstance.hide();
-					}
-					
-					// 2. Limpiar los campos
-					document.getElementById('adminUsername').value = '';
-					document.getElementById('adminPassword').value = '';
-					
-					// 3. Establecer usuario como propietario
-					isAdminLoggedIn = true;
-					currentUser = {
-						id: 1,
-						name: 'Propietario',
-						email: email,
-						role: 'propietario'
-					};
-					
-					// 4. Actualizar UI
-					document.getElementById('mainContent').classList.add('d-none');
-					document.getElementById('adminPanel').classList.remove('d-none');
-					document.getElementById('authButtons').classList.add('d-none');
-					document.getElementById('logoutButton').classList.remove('d-none');
-					
-					// 5. Cargar datos del admin
-					if (typeof loadAdminData === 'function') {
-						loadAdminData();
-					}
-					
-					console.log('✅ Login exitoso como propietario');
-					showNotification('Has iniciado sesión como Propietario');
-					
-				} catch (error) {
-					console.error('Error en login:', error);
-					alert('Error al iniciar sesión: ' + error.message);
-				}
-			} else {
-				alert('❌ Credenciales incorrectas\nUsuario: propietario\nContraseña: propietario123');
-				// Limpiar solo la contraseña
-				document.getElementById('adminPassword').value = '';
-				document.getElementById('adminPassword').focus();
-			}
-		}
 		function loginAsOwner() {
 			isAdminLoggedIn = true;
 			currentUser = {
