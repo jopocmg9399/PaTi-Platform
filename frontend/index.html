@@ -734,38 +734,37 @@
             </div>
         </div>
     </div>
-    <!-- Admin Login Modal - CORREGIDO -->
-<div class="modal fade" id="adminLoginModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Acceso Propietario</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="adminUsername" class="form-label">Usuario</label>
-                    <input type="text" class="form-control" id="adminUsername" placeholder="propietario" required>
-                </div>
-                <div class="mb-3">
-                    <label for="adminPassword" class="form-label">Contraseña</label>
-                    <input type="password" class="form-control" id="adminPassword" placeholder="propietario123" required>
-                </div>
-                <div class="d-grid gap-2">
-                    <button type="button" class="btn btn-primary" onclick="loginPropietario()">
-                        Ingresar como Propietario
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                </div>
-                <div class="mt-3 text-center">
-                    <small class="text-muted">Usuario: <strong>propietario</strong> | Contraseña: <strong>propietario123</strong></small>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+	<!-- Admin Login Modal - VERSIÓN SUPER SIMPLE -->
+	<div class="modal fade" id="adminLoginModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Acceso Propietario</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<form id="simpleAdminLoginForm" onsubmit="return loginPropietarioSimple(event)">
+						<div class="mb-3">
+							<label for="adminUsername" class="form-label">Usuario</label>
+							<input type="text" class="form-control" id="adminUsername" placeholder="propietario" required>
+						</div>
+						<div class="mb-3">
+							<label for="adminPassword" class="form-label">Contraseña</label>
+							<input type="password" class="form-control" id="adminPassword" placeholder="propietario123" required>
+						</div>
+						<div class="d-grid gap-2">
+							<button type="submit" class="btn btn-primary">
+								Ingresar como Propietario
+							</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+								Cancelar
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 
 	<script>
 	// FUNCIÓN PRINCIPAL PARA LOGIN DE PROPIETARIO
@@ -883,6 +882,58 @@
 			document.getElementById('adminPassword').focus();
 		}
 	}
+	// FUNCIÓN SIMPLE Y EFECTIVA
+function loginPropietarioSimple(event) {
+    if (event) event.preventDefault();
+    
+    const username = document.getElementById('adminUsername').value.trim();
+    const password = document.getElementById('adminPassword').value.trim();
+    
+    // Validar
+    if (!username || !password) {
+        alert('Por favor, completa ambos campos');
+        return false;
+    }
+    
+    // Verificar credenciales EXACTAS
+    if (username === 'propietario' && password === 'propietario123') {
+        // 1. Cerrar el modal CON BOOTSTRAP
+        const modal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
+        if (modal) modal.hide();
+        
+        // 2. Limpiar campos
+        document.getElementById('adminUsername').value = '';
+        document.getElementById('adminPassword').value = '';
+        
+        // 3. Configurar usuario
+        isAdminLoggedIn = true;
+        currentUser = {
+            id: 1,
+            name: 'Propietario',
+            email: 'propietario@pati.com',
+            role: 'propietario'
+        };
+        
+        // 4. Mostrar panel admin
+        document.getElementById('mainContent').classList.add('d-none');
+        document.getElementById('adminPanel').classList.remove('d-none');
+        document.getElementById('logoutButton').classList.remove('d-none');
+        
+        // 5. Cargar datos
+        if (typeof loadAdminData === 'function') {
+            loadAdminData();
+        }
+        
+        showNotification('✅ Has iniciado sesión como Propietario');
+        
+    } else {
+        alert('❌ Credenciales incorrectas\n\nUsuario correcto: propietario\nContraseña correcta: propietario123');
+        document.getElementById('adminPassword').value = '';
+        document.getElementById('adminPassword').focus();
+    }
+    
+    return false;
+}
 	// FUNCIÓN SUPER SIMPLE
 	async function loginAsOwnerAndClose() {
 		const username = document.getElementById('adminUsername').value.trim();
@@ -2043,42 +2094,13 @@
             registerModal.show();
         }
         function showAdminLogin() {
-			console.log('📱 Mostrando login de administrador');
-			
 			// Limpiar campos
-			const usernameField = document.getElementById('adminUsername');
-			const passwordField = document.getElementById('adminPassword');
+			document.getElementById('adminUsername').value = '';
+			document.getElementById('adminPassword').value = '';
 			
-			if (usernameField) usernameField.value = '';
-			if (passwordField) passwordField.value = '';
-			
-			// Mostrar modal
-			const adminLoginModal = document.getElementById('adminLoginModal');
-			if (adminLoginModal) {
-				// Cerrar cualquier modal abierto primero
-				const existingModal = bootstrap.Modal.getInstance(adminLoginModal);
-				if (existingModal) {
-					existingModal.hide();
-				}
-				
-				// Limpiar cualquier backdrop residual
-				const backdrops = document.querySelectorAll('.modal-backdrop');
-				backdrops.forEach(backdrop => backdrop.remove());
-				
-				// Restaurar body
-				document.body.classList.remove('modal-open');
-				document.body.style.overflow = 'auto';
-				document.body.style.paddingRight = '';
-				
-				// Mostrar nuevo modal
-				const modal = new bootstrap.Modal(adminLoginModal);
-				modal.show();
-				
-				// Enfocar el primer campo
-				setTimeout(() => {
-					if (usernameField) usernameField.focus();
-				}, 500);
-			}
+			// Mostrar modal SIMPLE
+			const modal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+			modal.show();
 		}
         function loadFeaturedStores() {
             const featuredStores = document.getElementById('featuredStores');
@@ -2513,18 +2535,21 @@
 			}
 		}
         function logout() {
-            currentUser = null;
-            isAdminLoggedIn = false;
-            currentStoreId = null;
-            cart = [];
-            updateCart();
-            document.getElementById('mainContent').classList.remove('d-none');
-            document.getElementById('adminPanel').classList.add('d-none');
-            document.getElementById('authButtons').classList.add('d-none');
-            document.getElementById('logoutButton').classList.add('d-none');
-            showSection('home');
-            showNotification('Has cerrado sesión correctamente');
-        }
+			// Limpiar TODO
+			currentUser = null;
+			isAdminLoggedIn = false;
+			currentStoreId = null;
+			cart = [];
+			
+			// Restaurar vista principal
+			document.getElementById('mainContent').classList.remove('d-none');
+			document.getElementById('adminPanel').classList.add('d-none');
+			document.getElementById('logoutButton').classList.add('d-none');
+			
+			showSection('home');
+			updateCart();
+			showNotification('Sesión cerrada correctamente');
+		}
         function createStore() {
             const storeName = document.getElementById('storeName').value;
             const storeCategory = document.getElementById('storeCategory').value;
