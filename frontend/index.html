@@ -735,29 +735,75 @@
         </div>
     </div>
     <!-- Admin Login Modal - CORREGIDO -->
-	<div class="modal fade" id="adminLoginModal" tabindex="-1">
+	<!-- Admin Login Modal - VERSIÓN SIMPLIFICADA -->
+	<div class="modal fade" id="adminLoginModal" tabindex="-1" data-bs-backdrop="static">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title">Acceso Propietario</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
 					<div class="mb-3">
 						<label for="adminUsername" class="form-label">Usuario</label>
-						<input type="text" class="form-control" id="adminUsername" placeholder="propietario" required>
+						<input type="text" class="form-control" id="adminUsername" value="propietario" required>
 					</div>
 					<div class="mb-3">
 						<label for="adminPassword" class="form-label">Contraseña</label>
-						<input type="password" class="form-control" id="adminPassword" placeholder="propietario123" required>
+						<input type="password" class="form-control" id="adminPassword" value="propietario123" required>
 					</div>
-					<div class="d-grid">
-						<button type="button" class="btn btn-primary" onclick="loginAsOwner()">Ingresar como Propietario</button>
+					<div class="d-grid gap-2">
+						<button type="button" class="btn btn-primary" onclick="loginAsOwnerAndClose()">
+							Ingresar como Propietario
+						</button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+							Cancelar
+						</button>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+
+	<script>
+	// FUNCIÓN NUEVA - SOLO PARA ESTE MODAL
+	function loginAsOwnerAndClose() {
+		const username = document.getElementById('adminUsername').value.trim();
+		const password = document.getElementById('adminPassword').value.trim();
+		
+		if (!username || !password) {
+			alert('Por favor, ingresa usuario y contraseña');
+			return;
+		}
+		
+		const email = username === 'propietario' ? 'propietario@pati.com' : username;
+		
+		// 1. CERRAR MODAL PRIMERO (esto SÍ funciona)
+		const modalElement = document.getElementById('adminLoginModal');
+		const modalInstance = bootstrap.Modal.getInstance(modalElement);
+		
+		if (modalInstance) {
+			modalInstance.hide();
+		} else {
+			// Fallback directo
+			modalElement.style.display = 'none';
+			document.body.classList.remove('modal-open');
+			const backdrop = document.querySelector('.modal-backdrop');
+			if (backdrop) backdrop.remove();
+		}
+		
+		// 2. LUEGO HACER LOGIN
+		setTimeout(() => {
+			userLogin(email, password, 'propietario', null)
+				.catch(error => {
+					console.error('Login error:', error);
+					// Si falla, mostrar modal de nuevo
+					const newModal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+					newModal.show();
+				});
+		}, 100);
+	}
+	</script>
     <!-- Register Modal -->
     <div class="modal fade" id="registerModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
