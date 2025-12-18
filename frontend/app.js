@@ -1,29 +1,17 @@
 // ====== CONFIGURACIÓN INICIAL ======
 const PB_URL = 'https://pati-platform.onrender.com';
-
-const pb = new PocketBase(PB_URL);
-pb.autoCancellation(false);
-
-console.log('Conectando a PocketBase:', PB_URL);
 const pb = new PocketBase(PB_URL);
 pb.autoCancellation(false);
 
 console.log('Conectando a PocketBase:', PB_URL);
 
-// ====== REST OF YOUR CODE ======
-// ... (tu código existente sigue aquí)
-const PB_URL = 'https://pati-platform.onrender.com';
-    ? 'http://127.0.0.1:8090'  // Local
-  //  : 'https://tu-pocketbase-en-render.onrender.com'; // ← TU NUEVA URL de PocketBase en Render
-const pb = new PocketBase(PB_URL);
-// Configurar CORS si es necesario
-pb.autoCancellation(false);
 // Variables globales
 let currentUser = null;
 let currentStoreId = null;
 let cart = [];
 let stores = []; // Cache local de tiendas
 let categories = []; // Cache local de categorías
+let products = []; // Cache local de productos
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
@@ -31,6 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
     loadInitialData();
     setupEventListeners();
+    
+    // Si estamos en la página principal, cargar tiendas destacadas
+    if (document.getElementById('featuredStores')) {
+        loadFeaturedStores();
+    }
 });
 
 // ====== FUNCIONES DE AUTENTICACIÓN ======
@@ -51,11 +44,11 @@ function updateUIForLoggedInUser() {
     const logoutButton = document.getElementById('logoutButton');
     
     if (currentUser) {
-        authButtons.classList.add('d-none');
-        logoutButton.classList.remove('d-none');
+        if (authButtons) authButtons.classList.add('d-none');
+        if (logoutButton) logoutButton.classList.remove('d-none');
     } else {
-        authButtons.classList.remove('d-none');
-        logoutButton.classList.add('d-none');
+        if (authButtons) authButtons.classList.remove('d-none');
+        if (logoutButton) logoutButton.classList.add('d-none');
     }
 }
 
@@ -66,7 +59,7 @@ async function userLogin(email, password, role, storeId) {
         currentUser = authData.record;
         
         // 2. Verificar rol
-        if (currentUser.role !== role) {
+        if (role && currentUser.role !== role) {
             alert(`Tu cuenta no tiene el rol de "${role}". Tu rol es: ${currentUser.role}`);
             pb.authStore.clear();
             currentUser = null;
@@ -79,15 +72,16 @@ async function userLogin(email, password, role, storeId) {
         // 4. Actualizar UI
         updateUIForLoggedInUser();
         
-        // 5. Cerrar modal y redirigir
+        // 5. Cerrar modal
         const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
         if (loginModal) loginModal.hide();
         
-        if (['admin', 'propietario', 'dependiente'].includes(role)) {
+        // 6. Redirigir según rol
+        if (['admin', 'propietario', 'dependiente'].includes(currentUser.role)) {
             document.getElementById('mainContent').classList.add('d-none');
             document.getElementById('adminPanel').classList.remove('d-none');
             loadAdminData();
-            showNotification(`Has iniciado sesión como ${role}`);
+            showNotification(`Has iniciado sesión como ${currentUser.role}`);
         } else {
             showSection('products');
             showNotification('Has iniciado sesión correctamente');
@@ -110,8 +104,12 @@ function logout() {
     updateCart();
     updateUIForLoggedInUser();
     
-    document.getElementById('mainContent').classList.remove('d-none');
-    document.getElementById('adminPanel').classList.add('d-none');
+    if (document.getElementById('mainContent')) {
+        document.getElementById('mainContent').classList.remove('d-none');
+    }
+    if (document.getElementById('adminPanel')) {
+        document.getElementById('adminPanel').classList.add('d-none');
+    }
     
     showSection('home');
     showNotification('Has cerrado sesión correctamente');
@@ -121,13 +119,13 @@ async function userRegister(userData) {
     try {
         // Preparar datos para PocketBase
         const recordData = {
-            "username": userData.email, // Obligatorio en PocketBase
+            "username": userData.email,
             "email": userData.email,
             "emailVisibility": true,
             "password": userData.password,
             "passwordConfirm": userData.password,
             "role": userData.role,
-            "profile": JSON.stringify({ // Campo JSON como string
+            "profile": JSON.stringify({
                 "nombre": userData.name,
                 "telefono": userData.phone,
                 "direccion": userData.address
@@ -171,17 +169,49 @@ async function loadInitialData() {
             sort: 'name'
         });
         
-        console.log('Datos iniciales cargados:', { stores: stores.length, categories: categories.length });
+        // Cargar productos
+        products = await pb.collection('products').getFullList({
+            expand: 'store,category',
+            sort: '-created'
+        });
+        
+        console.log('Datos iniciales cargados:', { 
+            stores: stores.length, 
+            categories: categories.length,
+            products: products.length 
+        });
         
     } catch (error) {
         console.error('Error cargando datos iniciales:', error);
         // Usar datos de prueba si hay error
         stores = stores.length ? stores : [
-            { id: 'demo1', name: "TechZone", category: "C001", status: "active", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "La mejor tecnología" }
+            { 
+                id: 'demo1', 
+                name: "TechZone", 
+                category: "C001", 
+                status: "active", 
+                image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
+                description: "La mejor tecnología" 
+            }
         ];
         categories = categories.length ? categories : [
             { id: 'C001', name: 'Electrónica' },
             { id: 'C002', name: 'Hogar' }
+        ];
+        products = products.length ? products : [
+            { 
+                id: 'prod1', 
+                name: "Smartphone XYZ", 
+                store: "store1", 
+                expand: { store: { name: "TechZone" } },
+                category: "C001",
+                expand: { category: { name: "Electrónica" } },
+                price1: 299.99, 
+                price2: 279.99, 
+                price3: 259.99, 
+                image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
+                description: "Smartphone de última generación." 
+            }
         ];
     }
 }
@@ -190,82 +220,129 @@ async function loadInitialData() {
 async function loadProducts() {
     try {
         const productsList = document.getElementById('productsList');
+        if (!productsList) return;
+        
         productsList.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary"></div><p>Cargando productos...</p></div>';
         
-        // Construir filtros
-        let filter = '';
+        // Si no hay productos cargados, cargarlos
+        if (products.length === 0) {
+            products = await pb.collection('products').getFullList({
+                expand: 'store,category',
+                sort: '-created'
+            });
+        }
+        
+        // Construir filtros si hay storeId
+        let filteredProducts = products;
         if (currentStoreId) {
-            filter = `store = "${currentStoreId}"`;
+            filteredProducts = products.filter(p => p.store === currentStoreId);
         }
         
-        // Obtener productos
-        const records = await pb.collection('products').getFullList({
-            filter: filter,
-            expand: 'store,category',
-            sort: '-created'
-        });
-        
-        productsList.innerHTML = '';
-        
-        if (records.length === 0) {
-            productsList.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                    <h4>No hay productos disponibles</h4>
-                    <p>Pronto agregaremos nuevos productos.</p>
-                </div>
-            `;
-            return;
-        }
-        
-        records.forEach(product => {
-            const storeName = product.expand?.store?.name || 'Sin tienda';
-            const categoryName = product.expand?.category?.name || 'Sin categoría';
-            
-            const productCard = `
-                <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
-                    <div class="card product-card h-100">
-                        <span class="category-badge badge bg-primary">${categoryName}</span>
-                        <img src="${product.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
-                             class="card-img-top product-image" alt="${product.name}">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">${product.name}</h5>
-                            <p class="card-text flex-grow-1">${product.description || 'Sin descripción'}</p>
-                            <div class="price-tier">
-                                <span>1-10: </span><span>$${product.price1?.toFixed(2) || '0.00'}</span>
-                            </div>
-                            <div class="price-tier">
-                                <span>11-50: </span><span>$${product.price2?.toFixed(2) || '0.00'}</span>
-                            </div>
-                            <div class="price-tier">
-                                <span>51+: </span><span>$${product.price3?.toFixed(2) || '0.00'}</span>
-                            </div>
-                            <div class="quantity-control">
-                                <button type="button" onclick="decreaseQuantity('${product.id}')">-</button>
-                                <input type="number" id="quantity-${product.id}" value="0" min="0" readonly>
-                                <button type="button" onclick="increaseQuantity('${product.id}')">+</button>
-                            </div>
-                            <button class="btn btn-primary mt-2 w-100" onclick="addToCart('${product.id}')">
-                                <i class="fas fa-cart-plus"></i> Agregar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            productsList.innerHTML += productCard;
-        });
+        displayProducts(filteredProducts);
         
     } catch (error) {
         console.error('Error cargando productos:', error);
         const productsList = document.getElementById('productsList');
+        if (productsList) {
+            productsList.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h4>Error cargando productos</h4>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function displayProducts(productsToShow) {
+    const productsList = document.getElementById('productsList');
+    if (!productsList) return;
+    
+    productsList.innerHTML = '';
+    
+    if (productsToShow.length === 0) {
         productsList.innerHTML = `
             <div class="col-12 text-center py-5">
-                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-                <h4>Error cargando productos</h4>
-                <p>${error.message}</p>
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h4>No hay productos disponibles</h4>
+                <p>Pronto agregaremos nuevos productos.</p>
             </div>
         `;
+        return;
     }
+    
+    productsToShow.forEach(product => {
+        const storeName = product.expand?.store?.name || 'Sin tienda';
+        const categoryName = product.expand?.category?.name || 'Sin categoría';
+        
+        const productCard = `
+            <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                <div class="card product-card h-100">
+                    <span class="category-badge badge bg-primary">${categoryName}</span>
+                    <img src="${product.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
+                         class="card-img-top product-image" alt="${product.name}">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${product.name}</h5>
+                        <p class="card-text flex-grow-1">${product.description || 'Sin descripción'}</p>
+                        <div class="price-tier">
+                            <span>1-10: </span><span>$${product.price1?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div class="price-tier">
+                            <span>11-50: </span><span>$${product.price2?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div class="price-tier">
+                            <span>51+: </span><span>$${product.price3?.toFixed(2) || '0.00'}</span>
+                        </div>
+                        <div class="quantity-control">
+                            <button type="button" onclick="decreaseQuantity('${product.id}')">-</button>
+                            <input type="number" id="quantity-${product.id}" value="0" min="0" readonly>
+                            <button type="button" onclick="increaseQuantity('${product.id}')">+</button>
+                        </div>
+                        <button class="btn btn-primary mt-2 w-100" onclick="addToCart('${product.id}')">
+                            <i class="fas fa-cart-plus"></i> Agregar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        productsList.innerHTML += productCard;
+    });
+}
+
+function filterProductsAdvanced() {
+    const searchText = document.getElementById('searchProduct')?.value.toLowerCase() || '';
+    const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+    const storeFilter = document.getElementById('storeFilter')?.value || '';
+    const priceMin = parseFloat(document.getElementById('priceMin')?.value) || 0;
+    const priceMax = parseFloat(document.getElementById('priceMax')?.value) || Infinity;
+    
+    let filteredProducts = products;
+    
+    // Aplicar filtros
+    if (searchText) {
+        filteredProducts = filteredProducts.filter(p => 
+            p.name.toLowerCase().includes(searchText) || 
+            (p.description && p.description.toLowerCase().includes(searchText))
+        );
+    }
+    
+    if (categoryFilter) {
+        filteredProducts = filteredProducts.filter(p => p.category === categoryFilter);
+    }
+    
+    if (storeFilter) {
+        filteredProducts = filteredProducts.filter(p => p.store === storeFilter);
+    }
+    
+    if (priceMin > 0 || priceMax < Infinity) {
+        filteredProducts = filteredProducts.filter(p => {
+            const price = p.price1 || 0;
+            return price >= priceMin && price <= priceMax;
+        });
+    }
+    
+    displayProducts(filteredProducts);
 }
 
 // ====== FUNCIONES DEL CARRITO ======
@@ -293,10 +370,13 @@ async function addToCart(productId) {
             return;
         }
         
-        // Obtener producto desde PocketBase
-        const product = await pb.collection('products').getOne(productId, {
-            expand: 'store,category'
-        });
+        // Buscar producto en cache o cargarlo
+        let product = products.find(p => p.id === productId);
+        if (!product) {
+            product = await pb.collection('products').getOne(productId, {
+                expand: 'store,category'
+            });
+        }
         
         if (!product) {
             alert('Producto no encontrado');
@@ -344,41 +424,41 @@ function updateCart() {
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
     
-    // Actualizar contador
-    cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    if (cartCount) cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    if (cartItems) cartItems.innerHTML = '';
+    if (cartTotal) cartTotal.textContent = '$0.00';
     
-    // Actualizar lista
-    cartItems.innerHTML = '';
     let total = 0;
     
     cart.forEach(item => {
         const itemTotal = item.unitPrice * item.quantity;
         total += itemTotal;
         
-        const cartItem = `
-            <div class="card mb-2">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h6 class="my-0">${item.name}</h6>
-                            <small class="text-muted">${item.storeName}</small><br>
-                            <small class="text-muted">$${item.unitPrice.toFixed(2)} x ${item.quantity}</small>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <span class="text-muted">$${itemTotal.toFixed(2)}</span>
-                            <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeFromCart('${item.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
+        if (cartItems) {
+            const cartItem = `
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="my-0">${item.name}</h6>
+                                <small class="text-muted">${item.storeName}</small><br>
+                                <small class="text-muted">$${item.unitPrice.toFixed(2)} x ${item.quantity}</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="text-muted">$${itemTotal.toFixed(2)}</span>
+                                <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeFromCart('${item.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-        cartItems.innerHTML += cartItem;
+            `;
+            cartItems.innerHTML += cartItem;
+        }
     });
     
-    // Actualizar total
-    cartTotal.textContent = `$${total.toFixed(2)}`;
+    if (cartTotal) cartTotal.textContent = `$${total.toFixed(2)}`;
 }
 
 function removeFromCart(productId) {
@@ -393,15 +473,15 @@ async function loadStores() {
         const storesList = document.getElementById('storesList');
         if (!storesList) return;
         
-        // Si ya cargamos las tiendas, usarlas
+        storesList.innerHTML = '';
+        
+        // Si no hay tiendas cargadas, cargarlas
         if (stores.length === 0) {
             stores = await pb.collection('stores').getFullList({
                 filter: 'status = "active"',
                 sort: '-created'
             });
         }
-        
-        storesList.innerHTML = '';
         
         stores.forEach(store => {
             const storeCard = `
@@ -430,6 +510,81 @@ async function loadStores() {
     } catch (error) {
         console.error('Error cargando tiendas:', error);
     }
+}
+
+function loadFeaturedStores() {
+    const featuredStores = document.getElementById('featuredStores');
+    if (!featuredStores) return;
+    
+    featuredStores.innerHTML = '';
+    
+    // Tomar las primeras 4 tiendas activas
+    const featured = stores.slice(0, 4);
+    
+    featured.forEach(store => {
+        const storeCard = `
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card store-card h-100">
+                    <img src="${store.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
+                         class="card-img-top" alt="${store.name}" style="height: 180px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${store.name}</h5>
+                        <p class="card-text flex-grow-1">${store.description || 'Sin descripción'}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="store-status ${store.status === 'active' ? 'status-active' : 'status-inactive'}">
+                                ${store.status === 'active' ? 'Activo' : 'Inactivo'}
+                            </span>
+                            <button class="btn btn-primary" onclick="showStoreLogin('${store.id}')">
+                                <i class="fas fa-sign-in-alt"></i> Entrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        featuredStores.innerHTML += storeCard;
+    });
+}
+
+function filterStores() {
+    const searchText = document.getElementById('searchStore')?.value.toLowerCase() || '';
+    const categoryFilter = document.getElementById('categoryStoreFilter')?.value || '';
+    
+    const storesList = document.getElementById('storesList');
+    if (!storesList) return;
+    
+    storesList.innerHTML = '';
+    
+    const filteredStores = stores.filter(store => {
+        const matchesSearch = store.name.toLowerCase().includes(searchText) || 
+                            (store.description && store.description.toLowerCase().includes(searchText));
+        const matchesCategory = !categoryFilter || store.category === categoryFilter;
+        return matchesSearch && matchesCategory;
+    });
+    
+    filteredStores.forEach(store => {
+        const storeCard = `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card store-card h-100">
+                    <img src="${store.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
+                         class="card-img-top" alt="${store.name}" style="height: 180px; object-fit: cover;">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">${store.name}</h5>
+                        <p class="card-text flex-grow-1">${store.description || 'Sin descripción'}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="store-status ${store.status === 'active' ? 'status-active' : 'status-inactive'}">
+                                ${store.status === 'active' ? 'Activo' : 'Inactivo'}
+                            </span>
+                            <button class="btn btn-primary" onclick="showStoreLogin('${store.id}')">
+                                <i class="fas fa-sign-in-alt"></i> Entrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        storesList.innerHTML += storeCard;
+    });
 }
 
 // ====== FUNCIONES DE UI ======
@@ -517,60 +672,124 @@ function setupEventListeners() {
     }
 }
 
-// ====== EXPORTAR FUNCIONES AL ÁMBITO GLOBAL ======
-// Esto permite que las funciones sean llamadas desde los atributos onclick en el HTML
-window.showSection = showSection;
-window.showStoreSelection = () => showSection('storeSelection');
-window.showCreateStoreForm = () => showSection('createStore');
-window.showStoreLogin = (storeId) => {
-    currentStoreId = storeId;
-    const store = stores.find(s => s.id === storeId);
-    if (store) {
-        document.getElementById('storeLoginName').textContent = store.name;
+// ====== FUNCIONES DE ADMINISTRACIÓN ======
+async function loadAdminData() {
+    try {
+        // Configurar menú según rol
+        const isOwner = currentUser && currentUser.role === 'propietario';
+        const isAdmin = currentUser && currentUser.role === 'admin';
+        const isDependiente = currentUser && currentUser.role === 'dependiente';
+        
+        const adminMenu = document.getElementById('adminMenu');
+        if (adminMenu) {
+            if (isOwner) {
+                adminMenu.innerHTML = `
+                    <div class="admin-menu-item active" onclick="showAdminTab('adminDashboardTab')">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminStoresTab')">
+                        <i class="fas fa-store"></i> Tiendas
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminCategoriesTab')">
+                        <i class="fas fa-tags"></i> Categorías
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminCommissionsTab')">
+                        <i class="fas fa-percentage"></i> Comisiones
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminReportsTab')">
+                        <i class="fas fa-chart-bar"></i> Informes
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminSettingsTab')">
+                        <i class="fas fa-cog"></i> Configuración
+                    </div>
+                `;
+            } else if (isAdmin) {
+                adminMenu.innerHTML = `
+                    <div class="admin-menu-item active" onclick="showAdminTab('adminDashboardTab')">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminProductsTab')">
+                        <i class="fas fa-box"></i> Productos
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminCategoriesTab')">
+                        <i class="fas fa-tags"></i> Categorías
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminCustomersTab')">
+                        <i class="fas fa-users"></i> Clientes
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminAffiliatesTab')">
+                        <i class="fas fa-handshake"></i> Afiliados
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminOrdersTab')">
+                        <i class="fas fa-shopping-cart"></i> Pedidos
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminReportsTab')">
+                        <i class="fas fa-chart-bar"></i> Reportes
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminImportsTab')">
+                        <i class="fas fa-file-import"></i> Importar Datos
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminSettingsTab')">
+                        <i class="fas fa-cog"></i> Configuración
+                    </div>
+                `;
+            } else if (isDependiente) {
+                adminMenu.innerHTML = `
+                    <div class="admin-menu-item active" onclick="showAdminTab('adminProductsTab')">
+                        <i class="fas fa-box"></i> Productos
+                    </div>
+                    <div class="admin-menu-item" onclick="showAdminTab('adminOrdersTab')">
+                        <i class="fas fa-shopping-cart"></i> Pedidos
+                    </div>
+                `;
+            }
+        }
+        
+        // Mostrar dashboard inicialmente
+        showAdminTab('adminDashboardTab');
+        
+    } catch (error) {
+        console.error('Error cargando datos de admin:', error);
     }
-    showSection('storeLogin');
-};
-window.showLoginForm = (role = 'customer') => {
-    document.getElementById('loginRole').value = role;
-    document.getElementById('loginStoreId').value = currentStoreId || '';
-    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
-    loginModal.show();
-};
-window.showRegisterForm = (role = 'customer') => {
-    document.getElementById('registerRole').value = role;
-    document.getElementById('registerStoreId').value = currentStoreId || '';
+}
+
+function showAdminTab(tabId) {
+    // Ocultar todas las pestañas
+    const tabs = document.querySelectorAll('.admin-tab-content');
+    tabs.forEach(tab => {
+        if (tab) tab.style.display = 'none';
+    });
     
-    const affiliateFields = document.getElementById('affiliateFields');
-    if (affiliateFields) {
-        affiliateFields.style.display = role === 'affiliate' ? 'block' : 'none';
+    // Quitar clase active de todos los items del menú
+    const menuItems = document.querySelectorAll('.admin-menu-item');
+    menuItems.forEach(item => {
+        if (item) item.classList.remove('active');
+    });
+    
+    // Mostrar la pestaña seleccionada
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) {
+        selectedTab.style.display = 'block';
     }
     
-    const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
-    registerModal.show();
-};
-window.showAdminLogin = () => {
-    const adminLoginModal = document.getElementById('adminLoginModal');
-    if (adminLoginModal) {
-        const modal = new bootstrap.Modal(adminLoginModal);
-        modal.show();
+    // Activar el item del menú correspondiente
+    const activeMenuItem = document.querySelector(`[onclick*="${tabId}"]`);
+    if (activeMenuItem) {
+        activeMenuItem.classList.add('active');
     }
-};
-window.loginAsOwner = () => {
-    const username = document.getElementById('adminUsername').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
-    
-    if (username === 'propietario' && password === 'propietario123') {
-        userLogin('propietario@pati.com', 'propietario123', 'propietario', null);
-    } else {
-        alert('Credenciales incorrectas. Usa: propietario / propietario123');
+}
+
+function viewSite() {
+    if (document.getElementById('adminPanel')) {
+        document.getElementById('adminPanel').classList.add('d-none');
     }
-};
-window.logout = logout;
-window.increaseQuantity = increaseQuantity;
-window.decreaseQuantity = decreaseQuantity;
-window.addToCart = addToCart;
-window.removeFromCart = removeFromCart;
-window.checkout = () => {
+    if (document.getElementById('mainContent')) {
+        document.getElementById('mainContent').classList.remove('d-none');
+    }
+    showSection('home');
+}
+
+function checkout() {
     if (cart.length === 0) {
         alert('Tu carrito está vacío');
         return;
@@ -589,6 +808,77 @@ window.checkout = () => {
     const offcanvas = document.getElementById('cartOffcanvas');
     const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
     if (bsOffcanvas) bsOffcanvas.hide();
+}
+
+// ====== EXPORTAR FUNCIONES AL ÁMBITO GLOBAL ======
+window.showSection = showSection;
+window.showStoreSelection = () => showSection('storeSelection');
+window.showCreateStoreForm = () => showSection('createStore');
+window.showStoreLogin = (storeId) => {
+    currentStoreId = storeId;
+    const store = stores.find(s => s.id === storeId);
+    if (store) {
+        const storeLoginName = document.getElementById('storeLoginName');
+        if (storeLoginName) {
+            storeLoginName.textContent = store.name;
+        }
+    }
+    showSection('storeLogin');
 };
+window.showLoginForm = (role = 'customer') => {
+    const loginRole = document.getElementById('loginRole');
+    const loginStoreId = document.getElementById('loginStoreId');
+    
+    if (loginRole) loginRole.value = role;
+    if (loginStoreId) loginStoreId.value = currentStoreId || '';
+    
+    const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+    loginModal.show();
+};
+window.showRegisterForm = (role = 'customer') => {
+    const registerRole = document.getElementById('registerRole');
+    const registerStoreId = document.getElementById('registerStoreId');
+    const affiliateFields = document.getElementById('affiliateFields');
+    
+    if (registerRole) registerRole.value = role;
+    if (registerStoreId) registerStoreId.value = currentStoreId || '';
+    
+    if (affiliateFields) {
+        affiliateFields.style.display = role === 'affiliate' ? 'block' : 'none';
+    }
+    
+    const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+    registerModal.show();
+};
+window.showAdminLogin = () => {
+    const adminLoginModal = document.getElementById('adminLoginModal');
+    if (adminLoginModal) {
+        const modal = new bootstrap.Modal(adminLoginModal);
+        modal.show();
+    }
+};
+window.loginAsOwner = () => {
+    const username = document.getElementById('adminUsername')?.value.trim();
+    const password = document.getElementById('adminPassword')?.value.trim();
+    
+    if (username === 'propietario' && password === 'propietario123') {
+        // Usar las credenciales reales del usuario propietario en PocketBase
+        userLogin('propietario@pati.com', 'propietario123', 'propietario', null);
+    } else {
+        alert('Credenciales incorrectas. Usa: propietario / propietario123');
+    }
+};
+window.logout = logout;
+window.increaseQuantity = increaseQuantity;
+window.decreaseQuantity = decreaseQuantity;
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.checkout = checkout;
+window.viewSite = viewSite;
+window.filterProductsAdvanced = filterProductsAdvanced;
+window.filterStores = filterStores;
+
+// Funciones de admin
+window.showAdminTab = showAdminTab;
 
 console.log('app.js cargado correctamente');
