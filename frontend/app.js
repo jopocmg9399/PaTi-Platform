@@ -868,15 +868,25 @@ window.loginAsOwner = () => {
         alert('Credenciales incorrectas. Usa: propietario / propietario123');
     }
 };
-window.logout = logout;
-window.increaseQuantity = increaseQuantity;
-window.decreaseQuantity = decreaseQuantity;
-window.addToCart = addToCart;
-window.removeFromCart = removeFromCart;
-window.checkout = checkout;
-window.viewSite = viewSite;
-window.filterProductsAdvanced = filterProductsAdvanced;
-window.filterStores = filterStores;
+// ====== EXPORTAR FUNCIONES CON NOMBRES ESPECÍFICOS ======
+// Usamos prefijo "app" para diferenciarlas de las funciones "puente"
+window.appShowSection = showSection;
+window.appShowLoginForm = showLoginForm;
+window.appShowRegisterForm = showRegisterForm;
+window.appShowStoreSelection = function() { showSection('storeSelection'); };
+window.appLoginAsOwner = loginAsOwner;
+window.appLogout = logout;
+window.appShowStoreLogin = showStoreLogin;
+
+// Funciones del carrito (ya están en window directamente en app.js)
+// window.increaseQuantity = increaseQuantity;  // YA DEBE ESTAR
+// window.decreaseQuantity = decreaseQuantity;  // YA DEBE ESTAR
+// window.addToCart = addToCart;               // YA DEBE ESTAR
+// window.removeFromCart = removeFromCart;     // YA DEBE ESTAR
+// window.checkout = checkout;                 // YA DEBE ESTAR
+// window.filterProductsAdvanced = filterProductsAdvanced; // YA DEBE ESTAR
+
+console.log('Funciones de app.js exportadas correctamente');
 
 // Funciones de admin
 window.showAdminTab = showAdminTab;
