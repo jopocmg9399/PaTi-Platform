@@ -766,44 +766,46 @@
 	</div>
 
 	<script>
-	// FUNCIÓN NUEVA - SOLO PARA ESTE MODAL
-	function loginAsOwnerAndClose() {
+	// FUNCIÓN SUPER SIMPLE
+	async function loginAsOwnerAndClose() {
 		const username = document.getElementById('adminUsername').value.trim();
 		const password = document.getElementById('adminPassword').value.trim();
 		
-		if (!username || !password) {
-			alert('Por favor, ingresa usuario y contraseña');
-			return;
-		}
+		console.log('Intentando login:', username);
 		
-		const email = username === 'propietario' ? 'propietario@pati.com' : username;
-		
-		// 1. CERRAR MODAL PRIMERO (esto SÍ funciona)
-		const modalElement = document.getElementById('adminLoginModal');
-		const modalInstance = bootstrap.Modal.getInstance(modalElement);
-		
-		if (modalInstance) {
-			modalInstance.hide();
-		} else {
-			// Fallback directo
+		// 1. VALIDAR CREDENCIALES LOCALMENTE
+		if (username === 'propietario' && password === 'propietario123') {
+			// 2. CERRAR EL MODAL
+			const modalElement = document.getElementById('adminLoginModal');
 			modalElement.style.display = 'none';
-			document.body.classList.remove('modal-open');
+			
+			// Quitar fondo oscuro
 			const backdrop = document.querySelector('.modal-backdrop');
 			if (backdrop) backdrop.remove();
+			
+			// Restaurar página
+			document.body.classList.remove('modal-open');
+			document.body.style.overflow = 'auto';
+			
+			// 3. REDIRIGIR A PANEL
+			document.getElementById('mainContent').classList.add('d-none');
+			document.getElementById('adminPanel').classList.remove('d-none');
+			
+			console.log('✅ Redirigiendo a panel de propietario...');
+			
+			// Forzar recarga de datos del admin
+			setTimeout(() => {
+				if (typeof loadAdminData === 'function') {
+					loadAdminData();
+				}
+			}, 500);
+			
+		} else {
+			alert('❌ Credenciales incorrectas\nUsuario: propietario\nContraseña: propietario123');
 		}
-		
-		// 2. LUEGO HACER LOGIN
-		setTimeout(() => {
-			userLogin(email, password, 'propietario', null)
-				.catch(error => {
-					console.error('Login error:', error);
-					// Si falla, mostrar modal de nuevo
-					const newModal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
-					newModal.show();
-				});
-		}, 100);
 	}
 	</script>
+	
     <!-- Register Modal -->
     <div class="modal fade" id="registerModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
