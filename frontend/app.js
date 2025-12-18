@@ -6,19 +6,75 @@ let currentUser = null;
 let currentStoreId = null;
 let cart = [];
 let stores = [];
+let products = [];
 let categories = [];
+let customers = [];
+let affiliates = [];
+let orders = [];
+let isAdminLoggedIn = false; // ← AÑADE ESTA LÍNEA IMPORTANTE
 
 // Inicialización
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('App iniciada, conectando a:', PB_URL);
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('📱 Iniciando PaTí...');
     
     // Inicializar PocketBase
     window.pb = new PocketBase(PB_URL);
     pb.autoCancellation(false);
     
-    checkAuth();
-    loadInitialData();
+    // Crear usuario propietario si no existe
+    await createOwnerIfNotExists();
+    
+    // VERIFICAR SI YA HAY SESIÓN ACTIVA
+    if (pb.authStore.isValid) {
+        try {
+            // Actualizar token si es necesario
+            await pb.collection('users').authRefresh();
+            currentUser = pb.authStore.model;
+            isAdminLoggedIn = currentUser.role === 'propietario' || currentUser.role === 'admin';
+            
+            // Actualizar UI según el rol
+            if (isAdminLoggedIn) {
+                document.getElementById('mainContent').classList.add('d-none');
+                document.getElementById('adminPanel').classList.remove('d-none');
+                document.getElementById('logoutButton').classList.remove('d-none');
+                document.getElementById('authButtons').classList.add('d-none');
+                
+                // Cargar datos del admin si la función existe
+                if (typeof loadAdminData === 'function') {
+                    loadAdminData();
+                }
+            } else if (currentUser) {
+                // Usuario normal (cliente)
+                document.getElementById('authButtons').classList.add('d-none');
+                document.getElementById('logoutButton').classList.remove('d-none');
+            }
+            
+            console.log('✅ Usuario ya autenticado:', currentUser.email, 'Rol:', currentUser.role);
+        } catch (error) {
+            console.log('Sesión expirada o inválida:', error);
+            pb.authStore.clear();
+        }
+    }
+    
+    // Configurar event listeners
     setupEventListeners();
+    
+    // Inicializar gráficos
+    if (typeof initializeCharts === 'function') {
+        initializeCharts();
+    }
+    
+    // Cargar datos iniciales
+    if (typeof loadInitialData === 'function') {
+        loadInitialData();
+    }
+    
+    // Cargar datos reales si la función existe
+    if (typeof loadRealData === 'function') {
+        await loadRealData();
+    }
+    
+    console.log('🚀 Aplicación lista!');
 });
 // ====== CREAR USUARIO PROPIETARIO SI NO EXISTE ======
 async function createOwnerIfNotExists() {
@@ -443,5 +499,260 @@ window.createStore = async function() {
         loadStores(); // Recargar lista de tiendas
     }
 };
+// ====== FUNCIONES AUXILIARES PARA EL INDEX.HTML ======
 
-// El resto del código permanece igual...
+// Función para actualizar UI cuando un usuario inicia sesión
+function updateUIForLoggedInUser() {
+    if (currentUser) {
+        document.getElementById('authButtons').classList.add('d-none');
+        document.getElementById('logoutButton').classList.remove('d-none');
+        
+        // Mostrar nombre del usuario si hay un elemento para ello
+        const userGreeting = document.getElementById('userGreeting');
+        if (userGreeting) {
+            userGreeting.textContent = `Hola, ${currentUser.name || currentUser.email}`;
+        }
+    }
+}
+
+// Función para mostrar notificaciones
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'position-fixed bottom-5 end-0 m-3 alert alert-success alert-dismissible fade show';
+    notification.style.zIndex = '1050';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Función para logout global
+window.logout = function() {
+    try {
+        // Limpiar autenticación de PocketBase
+        if (pb && pb.authStore) {
+            pb.authStore.clear();
+            console.log('✅ Sesión de PocketBase cerrada');
+        }
+    } catch (error) {
+        console.error('Error al cerrar sesión en PocketBase:', error);
+    }
+    
+    // Limpiar variables locales
+    currentUser = null;
+    isAdminLoggedIn = false;
+    currentStoreId = null;
+    cart = [];
+    
+    // Restaurar vista principal
+    document.getElementById('mainContent').classList.remove('d-none');
+    document.getElementById('adminPanel').classList.add('d-none');
+    document.getElementById('logoutButton').classList.add('d-none');
+    document.getElementById('authButtons').classList.remove('d-none');
+    
+    // Mostrar sección de inicio
+    if (typeof showSection === 'function') {
+        showSection('home');
+    } else {
+        // Si la función no existe, ocultar todas las secciones y mostrar home
+        const sections = document.querySelectorAll('section');
+        sections.forEach(section => section.style.display = 'none');
+        document.getElementById('homeSection').style.display = 'block';
+    }
+    
+    // Actualizar carrito
+    if (typeof updateCart === 'function') {
+        updateCart();
+    }
+    
+    showNotification('Sesión cerrada correctamente');
+};
+
+// Función para mostrar login de admin
+window.showAdminLogin = function() {
+    // Limpiar campos
+    const usernameField = document.getElementById('adminUsername');
+    const passwordField = document.getElementById('adminPassword');
+    
+    if (usernameField) usernameField.value = '';
+    if (passwordField) passwordField.value = '';
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+    modal.show();
+};
+
+// Handler para login de admin
+window.handleAdminLogin = async function(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('adminUsername').value.trim();
+    const password = document.getElementById('adminPassword').value.trim();
+    
+    if (!username || !password) {
+        alert('Por favor, completa ambos campos');
+        return false;
+    }
+    
+    try {
+        console.log('🔐 Intentando autenticar...');
+        
+        // Intentar autenticar con PocketBase
+        const authData = await pb.collection('users').authWithPassword(username, password);
+        
+        // Verificar si es propietario
+        const user = authData.record;
+        console.log('Usuario autenticado:', user);
+        
+        if (user.role !== 'propietario') {
+            alert('❌ Solo usuarios con rol "propietario" pueden acceder');
+            pb.authStore.clear();
+            return false;
+        }
+        
+        // Cerrar modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
+        if (modal) modal.hide();
+        
+        // Limpiar campos
+        document.getElementById('adminUsername').value = '';
+        document.getElementById('adminPassword').value = '';
+        
+        // Configurar usuario local
+        currentUser = {
+            id: user.id,
+            name: user.name || user.username,
+            email: user.email,
+            role: user.role,
+            profile: user
+        };
+        isAdminLoggedIn = true;
+        
+        // Actualizar UI
+        document.getElementById('mainContent').classList.add('d-none');
+        document.getElementById('adminPanel').classList.remove('d-none');
+        document.getElementById('authButtons').classList.add('d-none');
+        document.getElementById('logoutButton').classList.remove('d-none');
+        
+        // Cargar datos del admin
+        if (typeof loadAdminData === 'function') {
+            loadAdminData();
+        }
+        
+        showNotification(`✅ Bienvenido, ${currentUser.name}`);
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Error de autenticación:', error);
+        
+        // Mostrar mensaje según el error
+        if (error.message.includes('Failed to fetch')) {
+            alert('❌ No se puede conectar al servidor. Verifica tu conexión a internet.');
+        } else if (error.message.includes('invalid credentials')) {
+            alert('❌ Credenciales incorrectas. Verifica usuario y contraseña.');
+        } else {
+            alert(`❌ Error: ${error.message}`);
+        }
+        
+        // Limpiar contraseña
+        document.getElementById('adminPassword').value = '';
+        document.getElementById('adminPassword').focus();
+        
+        return false;
+    }
+};
+
+// Función para cargar datos reales desde PocketBase
+async function loadRealData() {
+    try {
+        console.log('🔄 Cargando datos desde PocketBase...');
+        
+        // Cargar categorías
+        try {
+            const categoriesResult = await pb.collection('categories').getList(1, 50);
+            categories = categoriesResult.items.map(item => ({
+                id: item.id,
+                name: item.name,
+                description: item.description || ''
+            }));
+            console.log(`✅ Categorías cargadas: ${categories.length}`);
+        } catch (error) {
+            console.warn('⚠️ No se pudieron cargar categorías, usando datos de ejemplo');
+            categories = [
+                { id: 'C001', name: 'Electrónica', description: '' },
+                { id: 'C002', name: 'Hogar', description: '' },
+                { id: 'C003', name: 'Útiles y Herramientas', description: '' },
+                { id: 'C004', name: 'Ropas', description: '' },
+                { id: 'C005', name: 'Calzados', description: '' },
+                { id: 'C006', name: 'Deportiva', description: '' }
+            ];
+        }
+        
+        // Cargar tiendas
+        try {
+            const storesResult = await pb.collection('stores').getList(1, 50);
+            stores = storesResult.items.map(item => ({
+                id: item.id,
+                name: item.name,
+                categoryId: item.category || 'C001',
+                admin: item.admin_email || 'admin@tienda.com',
+                status: item.status || 'Activo',
+                image: item.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                description: item.description || 'Tienda en línea'
+            }));
+            console.log(`✅ Tiendas cargadas: ${stores.length}`);
+        } catch (error) {
+            console.warn('⚠️ No se pudieron cargar tiendas, usando datos de ejemplo');
+            stores = [
+                { id: 1, name: "TechZone", categoryId: 'C001', admin: "admin@techzone.com", status: "Activo", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "La mejor tecnología" },
+                { id: 2, name: "FashionStyle", categoryId: 'C004', admin: "admin@fashionstyle.com", status: "Activo", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Moda para todos" }
+            ];
+        }
+        
+        // Cargar productos
+        try {
+            const productsResult = await pb.collection('products').getList(1, 200);
+            products = productsResult.items.map(item => ({
+                id: item.id,
+                name: item.name,
+                store: item.store_name || 'Tienda General',
+                storeId: item.store || 1,
+                categoryId: item.category || 'C001',
+                price1: parseFloat(item.price1) || 0,
+                price2: parseFloat(item.price2) || 0,
+                price3: parseFloat(item.price3) || 0,
+                stock: parseInt(item.stock) || 0,
+                image: item.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                description: item.description || ''
+            }));
+            console.log(`✅ Productos cargados: ${products.length}`);
+        } catch (error) {
+            console.warn('⚠️ No se pudieron cargar productos, usando datos de ejemplo');
+            products = [
+                { id: 1, name: "Smartphone XYZ", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 299.99, price2: 279.99, price3: 259.99, stock: 15, image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Smartphone de última generación." }
+            ];
+        }
+        
+        console.log('✅ Datos REALES cargados desde PocketBase');
+        
+        // Actualizar UI si las funciones existen
+        if (typeof loadFeaturedStores === 'function') loadFeaturedStores();
+        if (typeof loadProducts === 'function') loadProducts();
+        if (typeof loadStores === 'function') loadStores();
+        
+    } catch (error) {
+        console.error('❌ Error grave cargando datos:', error);
+        alert('Error conectando con el servidor. Usando datos de ejemplo.');
+    }
+}
+
+// Asegurar que las funciones estén disponibles globalmente
+window.loadRealData = loadRealData;
+window.showNotification = showNotification;

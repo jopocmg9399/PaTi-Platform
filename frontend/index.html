@@ -734,216 +734,39 @@
             </div>
         </div>
     </div>
-	<!-- Admin Login Modal - VERSIÓN CORRECTA -->
+	<!-- Admin Login Modal -->
 	<div class="modal fade" id="adminLoginModal" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title">Acceso Propietario</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
 				</div>
 				<div class="modal-body">
-					<div class="mb-3">
-						<label for="adminUsername" class="form-label">Usuario</label>
-						<input type="text" class="form-control" id="adminUsername" placeholder="Ej: propietario" autocomplete="off">
-					</div>
-					<div class="mb-3">
-						<label for="adminPassword" class="form-label">Contraseña</label>
-						<input type="password" class="form-control" id="adminPassword" placeholder="Ej: propietario123" autocomplete="off">
-					</div>
-					<div class="d-grid gap-2">
-						<button type="button" class="btn btn-primary" onclick="loginPropietarioSimple()">
-							Ingresar como Propietario
-						</button>
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-							Cancelar
-						</button>
-					</div>
-					<div class="mt-3 text-center">
-						<small class="text-muted">
-							Usuario: <code>propietario</code><br>
-							Contraseña: <code>propietario123</code>
-						</small>
-					</div>
+					<form id="adminLoginForm" onsubmit="return handleAdminLogin(event)">
+						<div class="mb-3">
+							<label for="adminUsername" class="form-label">Usuario o Email</label>
+							<input type="text" class="form-control" id="adminUsername" placeholder="propietario" required>
+						</div>
+						<div class="mb-3">
+							<label for="adminPassword" class="form-label">Contraseña</label>
+							<input type="password" class="form-control" id="adminPassword" placeholder="propietario123" required>
+						</div>
+						<div class="d-grid gap-2">
+							<button type="submit" class="btn btn-primary">
+								<i class="fas fa-sign-in-alt"></i> Ingresar como Propietario
+							</button>
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+								Cancelar
+							</button>
+						</div>
+					</form>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	<script>
-		// CONEXIÓN A POCKETBASE
-		const PB_URL = 'https://pati-platform.onrender.com';
-		const pb = new PocketBase(PB_URL);
-
-		// FUNCIÓN PRINCIPAL PARA LOGIN DE PROPIETARIO (CONEXIÓN REAL A POCKETBASE)
-		async function loginPropietarioSimple(event) {
-			if (event) event.preventDefault();
-			
-			const username = document.getElementById('adminUsername').value.trim();
-			const password = document.getElementById('adminPassword').value.trim();
-			
-			// Validar que no estén vacíos
-			if (!username || !password) {
-				alert('Por favor, completa ambos campos');
-				return false;
-			}
-			
-			try {
-				console.log('🔐 Intentando autenticar con PocketBase...');
-				
-				// 1. INTENTAR AUTENTICACIÓN CON POCKETBASE
-				// Buscar usuario por email o username
-				let authData = null;
-				
-				try {
-					// Primero intentar con el email
-					authData = await pb.collection('users').authWithPassword(username, password);
-				} catch (error) {
-					console.log('Primer intento falló, verificando si es usuario:', error);
-					// Si falla, podría ser username en lugar de email
-					// Buscar usuario por username
-					const users = await pb.collection('users').getFullList({
-						filter: `username = "${username}" || email = "${username}"`
-					});
-					
-					if (users.length > 0) {
-						const user = users[0];
-						// Intentar autenticar con el email encontrado
-						authData = await pb.collection('users').authWithPassword(user.email, password);
-					} else {
-						throw new Error('Usuario no encontrado');
-					}
-				}
-				
-				// 2. VERIFICAR SI ES PROPIETARIO
-				if (authData && authData.record) {
-					const user = authData.record;
-					console.log('Usuario autenticado:', user);
-					
-					// Verificar si es propietario (rol === 'propietario')
-					if (user.role !== 'propietario') {
-						alert('❌ Acceso denegado. Solo los propietarios pueden acceder a este panel.');
-						await pb.authStore.clear();
-						return false;
-					}
-					
-					// 3. CERRAR EL MODAL
-					const modalElement = document.getElementById('adminLoginModal');
-					const modalInstance = bootstrap.Modal.getInstance(modalElement);
-					if (modalInstance) {
-						modalInstance.hide();
-					}
-					
-					// 4. LIMPIAR CAMPOS
-					document.getElementById('adminUsername').value = '';
-					document.getElementById('adminPassword').value = '';
-					
-					// 5. CONFIGURAR USUARIO
-					isAdminLoggedIn = true;
-					currentUser = {
-						id: user.id,
-						name: user.name || user.username,
-						email: user.email,
-						role: user.role,
-						profile: user.profile || {}
-					};
-					
-					// 6. ACTUALIZAR UI
-					document.getElementById('mainContent').classList.add('d-none');
-					document.getElementById('adminPanel').classList.remove('d-none');
-					document.getElementById('authButtons').classList.add('d-none');
-					document.getElementById('logoutButton').classList.remove('d-none');
-					
-					// 7. CARGAR DATOS DEL ADMIN
-					if (typeof loadAdminData === 'function') {
-						loadAdminData();
-					}
-					
-					// 8. ACTUALIZAR TÍTULOS
-					document.getElementById('adminPanelTitle').textContent = 'Panel del Propietario';
-					document.getElementById('adminPanelHeader').textContent = 'Panel del Propietario - PaTí';
-					
-					// 9. MOSTRAR BOTÓN PARA VER SITIO
-					const viewSiteBtn = document.getElementById('viewSiteButton');
-					if (viewSiteBtn) viewSiteBtn.style.display = 'inline-block';
-					
-					// 10. MOSTRAR NOTIFICACIÓN
-					showNotification(`✅ Bienvenido, ${currentUser.name}`);
-					
-					console.log('✅ Login exitoso como propietario');
-					return true;
-					
-				} else {
-					throw new Error('No se pudo autenticar');
-				}
-				
-			} catch (error) {
-				console.error('❌ Error en autenticación:', error);
-				
-				// Mostrar mensaje de error amigable
-				let errorMessage = '❌ Error de autenticación';
-				
-				if (error.message.includes('Failed to fetch')) {
-					errorMessage = '❌ No se puede conectar con el servidor. Verifica tu conexión.';
-				} else if (error.message.includes('invalid credentials')) {
-					errorMessage = '❌ Credenciales incorrectas. Verifica usuario y contraseña.';
-				} else if (error.message.includes('Usuario no encontrado')) {
-					errorMessage = '❌ Usuario no encontrado.';
-				} else {
-					errorMessage = `❌ Error: ${error.message}`;
-				}
-				
-				alert(errorMessage);
-				
-				// Limpiar contraseña y enfocar
-				document.getElementById('adminPassword').value = '';
-				document.getElementById('adminPassword').focus();
-				
-				// Limpiar almacenamiento de auth si hay error
-				pb.authStore.clear();
-				
-				return false;
-			}
-		}
-
-		// MODIFICAR LA FUNCIÓN logout PARA LIMPIAR POCKETBASE TAMBIÉN
-		async function logout() {
-			try {
-				// Limpiar autenticación de PocketBase
-				if (pb.authStore.isValid) {
-					pb.authStore.clear();
-					console.log('✅ Sesión de PocketBase cerrada');
-				}
-			} catch (error) {
-				console.error('Error al cerrar sesión en PocketBase:', error);
-			}
-			
-			// Limpiar TODO localmente
-			currentUser = null;
-			isAdminLoggedIn = false;
-			currentStoreId = null;
-			cart = [];
-			
-			// Restaurar vista principal
-			document.getElementById('mainContent').classList.remove('d-none');
-			document.getElementById('adminPanel').classList.add('d-none');
-			document.getElementById('logoutButton').classList.add('d-none');
-			document.getElementById('authButtons').classList.remove('d-none');
-			
-			showSection('home');
-			updateCart();
-			showNotification('Sesión cerrada correctamente');
-		}
-
-		// ACTUALIZAR EL FORMULARIO DEL MODAL PARA USAR LA NUEVA FUNCIÓN
-		document.addEventListener('DOMContentLoaded', function() {
-			const adminLoginForm = document.getElementById('simpleAdminLoginForm');
-			if (adminLoginForm) {
-				adminLoginForm.onsubmit = loginPropietarioSimple;
-			}
-		});
-		</script>
-	</script>
+	
 	
     <!-- Register Modal -->
     <div class="modal fade" id="registerModal" tabindex="-1">
@@ -2089,38 +1912,15 @@
             const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
             registerModal.show();
         }
-        function showAdminLogin() {
-			console.log('🔄 Abriendo modal de login...');
+		 function showAdminLogin() {
+			// Limpiar campos
+			document.getElementById('adminUsername').value = '';
+			document.getElementById('adminPassword').value = '';
 			
-			// 1. OBTENER REFERENCIAS A LOS CAMPOS
-			const usernameField = document.getElementById('adminUsername');
-			const passwordField = document.getElementById('adminPassword');
-			
-			// 2. LIMPIAR CAMPOS ANTES DE MOSTRAR
-			if (usernameField) {
-				usernameField.value = ''; // ← ESTO ES CLAVE
-			}
-			if (passwordField) {
-				passwordField.value = ''; // ← ESTO ES CLAVE
-			}
-			
-			console.log('✅ Campos limpiados');
-			
-			// 3. MOSTRAR MODAL
-			const adminLoginModal = document.getElementById('adminLoginModal');
-			if (adminLoginModal) {
-				const modal = new bootstrap.Modal(adminLoginModal);
-				modal.show();
-				
-				// 4. ENFOCAR EL PRIMER CAMPO DESPUÉS DE MOSTRAR
-				setTimeout(() => {
-					if (usernameField) {
-						usernameField.focus();
-					}
-				}, 300);
-			}
-		}
-        function loadFeaturedStores() {
+			// Mostrar modal
+			const modal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+			modal.show();
+		}        function loadFeaturedStores() {
             const featuredStores = document.getElementById('featuredStores');
             featuredStores.innerHTML = '';
             const selected = stores.slice(0, 4);
