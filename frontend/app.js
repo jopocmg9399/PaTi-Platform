@@ -322,7 +322,7 @@ window.loginAsOwner = async function() {
     const username = document.getElementById('adminUsername').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
     
-    console.log('Intentando login como propietario...');
+    console.log('Login como propietario...');
     
     if (!username || !password) {
         alert('Por favor, ingresa usuario y contraseña');
@@ -332,87 +332,34 @@ window.loginAsOwner = async function() {
     const email = username === 'propietario' ? 'propietario@pati.com' : username;
     
     try {
-        // Deshabilitar botón para prevenir múltiples clics
-        const loginBtn = event.target;
-        loginBtn.disabled = true;
-        loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Iniciando...';
+        // PRIMERO CERRAR EL MODAL (método simple)
+        const modal = document.getElementById('adminLoginModal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
         
-        // 1. Primero, obtener el modal
-        const modalElement = document.getElementById('adminLoginModal');
+        // Eliminar fondo oscuro
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
         
-        // 2. Intentar login
+        // Restaurar página
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = 'auto';
+        
+        // LUEGO HACER LOGIN
         const result = await userLogin(email, password, 'propietario', null);
         
-        if (result.success) {
-            console.log('✅ Login exitoso, cerrando modal...');
-            
-            // 3. FORZAR CIERRE COMPLETO DEL MODAL
-            closeModalCompletely('adminLoginModal');
-            
-            // Opcional: Limpiar los campos
-            document.getElementById('adminUsername').value = '';
-            document.getElementById('adminPassword').value = '';
-            
-        } else {
-			// FUNCIÓN PARA CERRAR MODAL COMPLETAMENTE
-			function closeModalCompletely(modalId) {
-				console.log('Cerrando modal:', modalId);
-				
-				const modal = document.getElementById(modalId);
-				if (!modal) {
-					console.log('Modal no encontrado:', modalId);
-					return;
-				}
-				
-				// Paso 1: Ocultar el modal
-				modal.classList.remove('show');
-				modal.style.display = 'none';
-				
-				// Paso 2: Eliminar todos los backdrops
-				const backdrops = document.querySelectorAll('.modal-backdrop');
-				backdrops.forEach(backdrop => {
-					console.log('Eliminando backdrop');
-					backdrop.remove();
-				});
-				
-				// Paso 3: Restaurar el body
-				document.body.classList.remove('modal-open');
-				document.body.style.overflow = 'auto';
-				document.body.style.paddingRight = '';
-				
-				// Paso 4: Remover atributos
-				modal.setAttribute('aria-hidden', 'true');
-				modal.removeAttribute('aria-modal');
-				modal.removeAttribute('role');
-				modal.style.paddingRight = '';
-				
-				// Paso 5: Si hay una instancia de Bootstrap, destruirla
-				const bsModal = bootstrap.Modal.getInstance(modal);
-				if (bsModal) {
-					bsModal.dispose();
-					console.log('Instancia de Bootstrap eliminada');
-				}
-				
-				// Paso 6: Disparar evento de cierre
-				modal.dispatchEvent(new Event('hidden.bs.modal'));
-				
-				console.log('✅ Modal cerrado completamente');
-			}
-            console.log('❌ Login fallido');console.log('app.js cargado correctamente');)
-            // Rehabilitar botón
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = 'Ingresar como Propietario';
+        if (!result.success) {
+            // Si falla, mostrar modal de nuevo
+            showAdminLogin();
         }
         
     } catch (error) {
         console.error('Error:', error);
         alert('Error: ' + error.message);
-        
-        // Rehabilitar botón en caso de error
-        if (event && event.target) {
-            event.target.disabled = false;
-            event.target.innerHTML = 'Ingresar como Propietario';
-        }
+        // Mostrar modal de nuevo si hay error
+        showAdminLogin();
     }
 };
 
