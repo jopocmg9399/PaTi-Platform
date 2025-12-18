@@ -322,6 +322,8 @@ window.loginAsOwner = async function() {
     const username = document.getElementById('adminUsername').value.trim();
     const password = document.getElementById('adminPassword').value.trim();
     
+    console.log('Intentando login como propietario...');
+    
     if (!username || !password) {
         alert('Por favor, ingresa usuario y contraseña');
         return;
@@ -330,38 +332,182 @@ window.loginAsOwner = async function() {
     const email = username === 'propietario' ? 'propietario@pati.com' : username;
     
     try {
-        // Obtener el elemento modal
+        // Deshabilitar botón para prevenir múltiples clics
+        const loginBtn = event.target;
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Iniciando...';
+        
+        // 1. Primero, obtener el modal
         const modalElement = document.getElementById('adminLoginModal');
         
-        // Crear una promesa que se resuelva cuando el modal se oculte
-        const modalClosed = new Promise((resolve) => {
-            modalElement.addEventListener('hidden.bs.modal', function() {
-                console.log('Modal hidden event fired');
-                resolve();
-            }, { once: true }); // { once: true } asegura que el listener se ejecute solo una vez
-        });
-        
-        // Intentar login
+        // 2. Intentar login
         const result = await userLogin(email, password, 'propietario', null);
         
         if (result.success) {
-            // Obtener instancia del modal y ocultarlo
-            const modal = bootstrap.Modal.getInstance(modalElement);
-            if (modal) {
-                modal.hide();
-                console.log('Modal hide() llamado');
-                
-                // Esperar a que el modal realmente se cierre
-                await modalClosed;
-                console.log('Modal completamente cerrado');
-            }
+            console.log('✅ Login exitoso, cerrando modal...');
+            
+            // 3. FORZAR CIERRE COMPLETO DEL MODAL
+            closeModalCompletely('adminLoginModal');
+            
+            // Opcional: Limpiar los campos
+            document.getElementById('adminUsername').value = '';
+            document.getElementById('adminPassword').value = '';
+            
+        } else {
+			// FUNCIÓN PARA CERRAR MODAL COMPLETAMENTE
+			function closeModalCompletely(modalId) {
+				console.log('Cerrando modal:', modalId);
+				
+				const modal = document.getElementById(modalId);
+				if (!modal) {
+					console.log('Modal no encontrado:', modalId);
+					return;
+				}
+				
+				// Paso 1: Ocultar el modal
+				modal.classList.remove('show');
+				modal.style.display = 'none';
+				
+				// Paso 2: Eliminar todos los backdrops
+				const backdrops = document.querySelectorAll('.modal-backdrop');
+				backdrops.forEach(backdrop => {
+					console.log('Eliminando backdrop');
+					backdrop.remove();
+				});
+				
+				// Paso 3: Restaurar el body
+				document.body.classList.remove('modal-open');
+				document.body.style.overflow = 'auto';
+				document.body.style.paddingRight = '';
+				
+				// Paso 4: Remover atributos
+				modal.setAttribute('aria-hidden', 'true');
+				modal.removeAttribute('aria-modal');
+				modal.removeAttribute('role');
+				modal.style.paddingRight = '';
+				
+				// Paso 5: Si hay una instancia de Bootstrap, destruirla
+				const bsModal = bootstrap.Modal.getInstance(modal);
+				if (bsModal) {
+					bsModal.dispose();
+					console.log('Instancia de Bootstrap eliminada');
+				}
+				
+				// Paso 6: Disparar evento de cierre
+				modal.dispatchEvent(new Event('hidden.bs.modal'));
+				
+				console.log('✅ Modal cerrado completamente');
+			}
+            console.log('❌ Login fallido');console.log('app.js cargado correctamente');)
+            // Rehabilitar botón
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = 'Ingresar como Propietario';
         }
         
     } catch (error) {
         console.error('Error:', error);
         alert('Error: ' + error.message);
+        
+        // Rehabilitar botón en caso de error
+        if (event && event.target) {
+            event.target.disabled = false;
+            event.target.innerHTML = 'Ingresar como Propietario';
+        }
     }
 };
+
+// FUNCIÓN PARA CERRAR MODAL COMPLETAMENTE
+function closeModalCompletely(modalId) {
+    console.log('Cerrando modal:', modalId);
+    
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+        console.log('Modal no encontrado:', modalId);
+        return;
+    }
+    
+    // Paso 1: Ocultar el modal
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    
+    // Paso 2: Eliminar todos los backdrops
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(backdrop => {
+        console.log('Eliminando backdrop');
+        backdrop.remove();
+    });
+    
+    // Paso 3: Restaurar el body
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = 'auto';
+    document.body.style.paddingRight = '';
+    
+    // Paso 4: Remover atributos
+    modal.setAttribute('aria-hidden', 'true');
+    modal.removeAttribute('aria-modal');
+    modal.removeAttribute('role');
+    modal.style.paddingRight = '';
+    
+    // Paso 5: Si hay una instancia de Bootstrap, destruirla
+    const bsModal = bootstrap.Modal.getInstance(modal);
+    if (bsModal) {
+        bsModal.dispose();
+        console.log('Instancia de Bootstrap eliminada');
+    }
+    
+    // Paso 6: Disparar evento de cierre
+    modal.dispatchEvent(new Event('hidden.bs.modal'));
+    
+    console.log('✅ Modal cerrado completamente');
+}
+
+// También actualiza userLogin para que no intente cerrar modales
+async function userLogin(email, password, role, storeId) {
+    try {
+        console.log('=== INICIANDO LOGIN ===');
+        
+        // Autenticar
+        const authData = await pb.collection('users').authWithPassword(email, password);
+        currentUser = authData.record;
+        
+        console.log('✅ Login exitoso para:', currentUser.email);
+        
+        // Verificar rol
+        if (role && currentUser.role !== role) {
+            alert(`Rol incorrecto. Esperabas "${role}" pero tienes "${currentUser.role}"`);
+            pb.authStore.clear();
+            currentUser = null;
+            return { success: false };
+        }
+        
+        // Actualizar UI
+        updateUIForLoggedInUser();
+        
+        // Redirigir según rol
+        if (currentUser.role === 'propietario') {
+            console.log('Redirigiendo a panel de propietario');
+            document.getElementById('mainContent').classList.add('d-none');
+            document.getElementById('adminPanel').classList.remove('d-none');
+            loadAdminData();
+            showNotification('Has iniciado sesión como Propietario');
+        } else if (currentUser.role === 'admin' || currentUser.role === 'dependiente') {
+            document.getElementById('mainContent').classList.add('d-none');
+            document.getElementById('adminPanel').classList.remove('d-none');
+            loadAdminData();
+            showNotification(`Has iniciado sesión como ${currentUser.role}`);
+        } else {
+            showSection('products');
+            showNotification('Has iniciado sesión correctamente');
+        }
+        
+        return { success: true, user: currentUser };
+        
+    } catch (error) {
+        console.error('Error en login:', error);
+        alert('Error: ' + (error.message || 'Error al iniciar sesión'));
+        return { success: false, error: error.message };
+    }
+}
 
 // Modificar la función createStore del index.html para usar autorización
 window.createStore = async function() {
