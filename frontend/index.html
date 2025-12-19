@@ -458,6 +458,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             </div>
         </div>
     </nav>
+	<div id="productsContainer"></div>
     <!-- Main Content Sections -->
     <div id="mainContent">
         <!-- Home Section -->
@@ -3755,5 +3756,34 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             </div>
         </div>
     </div>
+	<script src="js/app.js"></script>
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+	  loadProducts();
+	});
+
+	async function loadProducts() {
+	  try {
+		const products = await fetchFromBackend('/api/products');
+		const productsContainer = document.getElementById('productsContainer');
+		 products.forEach(product => {
+		   productsContainer.innerHTML += `
+			 <div class="col-md-4">
+			   <div class="card mb-4">
+				 <img src="${product.image}" class="card-img-top" alt="${product.name}">
+				 <div class="card-body">
+				   <h5 class="card-title">${product.name}</h5>
+				   <p class="card-text">${product.description}</p>
+				   <button class="btn btn-primary">Add to Cart</button>
+				 </div>
+			   </div>
+			 </div>
+		   `;
+		 });
+	   } catch (error) {
+		 console.error('Error loading products:', error);
+	   }
+	}
+	</script>
 </body>
 </html>
