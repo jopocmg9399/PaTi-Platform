@@ -13,6 +13,28 @@ let stores = []; // Cache local de tiendas
 let categories = []; // Cache local de categorías
 let products = []; // Cache local de productos
 
+// Agrega esto ANTES de cargar datos:
+async function initApp() {
+  try {
+    // Autenticar
+    await pb.collection('users').authWithPassword(
+      'propietario@ejemplo.com',
+      'propietario123'
+    );
+    
+    // Ahora cargar datos
+    const products = await loadInitialData();
+    console.log('Productos:', products);
+    
+    // Renderizar en la página...
+  } catch (error) {
+    console.error('Error iniciando app:', error);
+  }
+}
+
+// Ejecutar
+initApp();
+
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
     console.log('App iniciada, conectando a:', PB_URL);
@@ -156,64 +178,37 @@ async function userRegister(userData) {
 }
 
 // ====== FUNCIONES DE CARGA INICIAL ======
+// REEMPLAZA lo que tienes actualmente con ESTO:
 async function loadInitialData() {
-    try {
-        // Cargar tiendas activas
-        stores = await pb.collection('stores').getFullList({
-            filter: 'status = "active"',
-            sort: '-created'
-        });
-        
-        // Cargar categorías
-        categories = await pb.collection('categories').getFullList({
-            sort: 'name'
-        });
-        
-        // Cargar productos
-        products = await pb.collection('products').getFullList({
-            expand: 'store,category',
-            sort: '-created'
-        });
-        
-        console.log('Datos iniciales cargados:', { 
-            stores: stores.length, 
-            categories: categories.length,
-            products: products.length 
-        });
-        
-    } catch (error) {
-        console.error('Error cargando datos iniciales:', error);
-        // Usar datos de prueba si hay error
-        stores = stores.length ? stores : [
-            { 
-                id: 'demo1', 
-                name: "TechZone", 
-                category: "C001", 
-                status: "active", 
-                image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
-                description: "La mejor tecnología" 
-            }
-        ];
-        categories = categories.length ? categories : [
-            { id: 'C001', name: 'Electrónica' },
-            { id: 'C002', name: 'Hogar' }
-        ];
-        products = products.length ? products : [
-            { 
-                id: 'prod1', 
-                name: "Smartphone XYZ", 
-                store: "store1", 
-                expand: { store: { name: "TechZone" } },
-                category: "C001",
-                expand: { category: { name: "Electrónica" } },
-                price1: 299.99, 
-                price2: 279.99, 
-                price3: 259.99, 
-                image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", 
-                description: "Smartphone de última generación." 
-            }
-        ];
-    }
+  try {
+    console.log('🔐 Intentando autenticar...');
+    
+    // 1. AUTENTICAR con el usuario que SÍ existe
+    const authData = await pb.collection('users').authWithPassword(
+      'propietario',          // ← USUARIO/EMAIL (probablemente 'propietario' o 'propietario@pati.com')
+      'propietario123'        // ← CONTRASEÑA
+    );
+    
+    console.log('✅ Autenticado como:', authData.record);
+    
+    // 2. AHORA cargar productos
+    console.log('📦 Cargando productos...');
+    const products = await pb.collection('products').getFullList({
+      sort: '-created'
+    });
+    
+    console.log(`✅ ${products.length} productos cargados`);
+    return products;
+    
+  } catch (error) {
+    console.error('❌ Error en loadInitialData:', error);
+    
+    // Información de diagnóstico:
+    console.log('🔍 Estado de autenticación:', pb.authStore.isValid);
+    console.log('🔍 Token:', pb.authStore.token);
+    
+    return []; // Retorna array vacío en lugar de fallar
+  }
 }
 
 // ====== FUNCIONES DE PRODUCTOS ======
