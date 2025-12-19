@@ -1120,6 +1120,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
 						</div>
 					</div>
 				</div>
+				<button onclick="exportData()">Exportar Datos</button>
 				<!-- Imports Tab -->
 				<div id="adminImportsTab" class="admin-tab-content">
 					<h5 class="mb-4">Importar Datos</h5>
@@ -1288,6 +1289,27 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
 			</div>
 		</div>
 	</div>
+	<!-- index.html -->
+	<input type="file" id="fileInput" />
+	<button onclick="importData()">Importar Datos</button>
+
+	<script>
+	async function importData() {
+	  const fileInput = document.getElementById('fileInput');
+	  const file = fileInput.files[0];
+	  if (!file) {
+	   alert('Por favor, selecciona un archivo para importar');
+	   return;
+	  }
+	  const reader = new FileReader();
+	  reader.onload = async (e) => {
+		const data = JSON.parse(e.target.result);
+		await fetchFromBackend('/api/import', 'POST', data);
+		console.log('Datos importados con éxito');
+	  };
+	  reader.readAsText(file);
+	}
+	</script>
     <!-- Shopping Cart -->
     <div class="cart-icon" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
         <i class="fas fa-shopping-cart fa-lg"></i>
@@ -3757,6 +3779,18 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
         </div>
     </div>
 	<script src="js/app.js"></script>
+	
+	<script>
+	async function exportData() {
+	  try {
+		const dataExported = await fetchFromBackend('/path-to-export-endpoint');
+	   // Manejar la descarga del archivo o notificar al usuario
+		console.log('Datos exportados con éxito');
+	  } catch (error) {
+		console.error('Error al exportar datos', error);
+	  }
+	}
+	</script>
 	<script>
 	document.addEventListener('DOMContentLoaded', function() {
 	  loadProducts();
