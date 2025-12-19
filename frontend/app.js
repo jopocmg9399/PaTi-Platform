@@ -13,27 +13,6 @@ let stores = []; // Cache local de tiendas
 let categories = []; // Cache local de categorías
 let products = []; // Cache local de productos
 
-// Agrega esto ANTES de cargar datos:
-async function initApp() {
-  try {
-    // Autenticar
-    await pb.collection('users').authWithPassword(
-      'propietario@ejemplo.com',
-      'propietario123'
-    );
-    
-    // Ahora cargar datos
-    const products = await loadInitialData();
-    console.log('Productos:', products);
-    
-    // Renderizar en la página...
-  } catch (error) {
-    console.error('Error iniciando app:', error);
-  }
-}
-
-// Ejecutar
-initApp();
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
@@ -181,33 +160,35 @@ async function userRegister(userData) {
 // REEMPLAZA lo que tienes actualmente con ESTO:
 async function loadInitialData() {
   try {
-    console.log('🔐 Intentando autenticar...');
-    
-    // 1. AUTENTICAR con el usuario que SÍ existe
-    const authData = await pb.collection('users').authWithPassword(
-      'propietario',          // ← USUARIO/EMAIL (probablemente 'propietario' o 'propietario@pati.com')
-      'propietario123'        // ← CONTRASEÑA
-    );
-    
-    console.log('✅ Autenticado como:', authData.record);
-    
-    // 2. AHORA cargar productos
     console.log('📦 Cargando productos...');
-    const products = await pb.collection('products').getFullList({
-      sort: '-created'
+    
+    // Verificar que estamos autenticados
+    if (!pb.authStore.isValid) {
+      console.log('⚠️  No autenticado, omitiendo carga de datos');
+      return [];
+    }
+    
+    // Cargar productos
+    const productsData = await pb.collection('products').getFullList({
+      sort: '-created',
+      expand: 'store,category'
     });
     
+    // Guardar en cache
+    products = productsData;
+    
     console.log(`✅ ${products.length} productos cargados`);
+    
+    // Si estamos en la sección de productos, mostrarlos
+    if (document.getElementById('productsSection')?.style.display === 'block') {
+      displayProducts(products);
+    }
+    
     return products;
     
   } catch (error) {
     console.error('❌ Error en loadInitialData:', error);
-    
-    // Información de diagnóstico:
-    console.log('🔍 Estado de autenticación:', pb.authStore.isValid);
-    console.log('🔍 Token:', pb.authStore.token);
-    
-    return []; // Retorna array vacío en lugar de fallar
+    return [];
   }
 }
 
@@ -852,15 +833,48 @@ window.showAdminLogin = () => {
         modal.show();
     }
 };
-window.loginAsOwner = () => {
+window.loginAsOwner = async () => {
     const username = document.getElementById('adminUsername')?.value.trim();
     const password = document.getElementById('adminPassword')?.value.trim();
     
-    if (username === 'propietario' && password === 'propietario123') {
-        // Usar las credenciales reales del usuario propietario en PocketBase
-        userLogin('propietario@pati.com', 'propietario123', 'propietario', null);
-    } else {
+    console.log('🔐 Intentando login como propietario:', username);
+    
+    if (!username || !password) {
+        alert('Por favor, llena ambos campos');
+        return;
+    }
+    
+    try {
+        // 1. Limpiar sesión anterior
+        pb.authStore.clear();
+        
+        // 2. Intentar autenticar con las credenciales que ingresa el usuario
+        const authData = await pb.collection('users').authWithPassword(
+            username,  // Esto puede ser "propietario" o "propietario@pati.com"
+            password   // "propietario123"
+        );
+        
+        console.log('✅ Login exitoso!', authData.record);
+        
+        // 3. Cerrar el modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
+        if (modal) modal.hide();
+        
+        // 4. Redirigir al panel admin
+        currentUser = authData.record;
+        document.getElementById('mainContent').classList.add('d-none');
+        document.getElementById('adminPanel').classList.remove('d-none');
+        loadAdminData();
+        
+        // 5. Cargar datos después del login
+        await loadInitialData();
+        
+    } catch (error) {
+        console.error('❌ Error en login:', error);
         alert('Credenciales incorrectas. Usa: propietario / propietario123');
+        
+        // Limpiar campo de contraseña
+        document.getElementById('adminPassword').value = '';
     }
 };
 // ====== EXPORTAR FUNCIONES CON NOMBRES ESPECÍFICOS ======
