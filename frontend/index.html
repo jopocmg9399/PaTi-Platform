@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
-	<script src="app.js"></script>
 	<style>
         :root {
             --gold-light: #F5F0E6;
@@ -398,33 +397,112 @@
             transform: translateY(-3px);
         }
         @media (max-width: 768px) {
-            .product-card {
-                margin-bottom: 20px;
-            }
-            .hero-section h1 {
-                font-size: 2rem;
-            }
-            .admin-container {
-                flex-direction: column;
-            }
-            .admin-sidebar {
-                width: 100%;
-            }
-            .amazed-person {
-                flex-direction: column;
-                text-align: center;
-            }
-            .amazed-person img {
-                margin-right: 0;
-                margin-bottom: 1rem;
-            }
-            .action-buttons {
-                flex-direction: column;
-            }
-            .product-summary {
-                flex-direction: column;
-            }
-        }
+			.product-card {
+				margin-bottom: 20px;
+			}
+			.hero-section h1 {
+				font-size: 2rem;
+			}
+			.admin-container {
+				flex-direction: column;
+			}
+			.admin-sidebar {
+				width: 100%;
+			}
+			.amazed-person {
+				flex-direction: column;
+				text-align: center;
+			}
+			.amazed-person img {
+				margin-right: 0;
+				margin-bottom: 1rem;
+			}
+			.action-buttons {
+				flex-direction: column;
+			}
+			.product-summary {
+				flex-direction: column;
+			}
+			
+			/* AÑADE ESTO: */
+			.navbar-nav .btn {
+				margin-top: 10px;
+				width: 100%;
+			}
+			
+			.hero-section {
+				padding: 3rem 0;
+			}
+			
+			.hero-content {
+				padding: 1rem;
+				margin: 0 10px;
+			}
+			
+			.hero-section .btn {
+				display: block;
+				width: 100%;
+				margin-bottom: 10px;
+			}
+			
+			.cart-icon {
+				bottom: 10px;
+				right: 10px;
+				width: 50px;
+				height: 50px;
+			}
+		}
+		/* Tablas responsivas */
+		@media (max-width: 768px) {
+			.table-responsive {
+				overflow-x: auto;
+				-webkit-overflow-scrolling: touch;
+			}
+			
+			.table th, 
+			.table td {
+				white-space: nowrap;
+				min-width: 100px;
+			}
+			
+			.action-buttons {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 5px;
+			}
+			
+			.action-buttons .btn {
+				flex: 1;
+				min-width: 70px;
+			}
+		}
+		/* Modales responsivos */
+		@media (max-width: 576px) {
+			.modal-dialog {
+				margin: 10px;
+			}
+			
+			.modal-content {
+				border-radius: 0;
+			}
+			
+			.login-role-btn {
+				width: 100%;
+				margin: 5px 0;
+			}
+			
+			.admin-topbar {
+				flex-direction: column;
+				align-items: flex-start;
+			}
+			
+			.admin-topbar > div {
+				margin-top: 10px;
+				width: 100%;
+				display: flex;
+				justify-content: space-between;
+			}
+		}
     </style>
 </head>
 <body>
@@ -563,8 +641,9 @@
                         <h4>Envíanos un Mensaje</h4>
                         <form id="contactForm">
                             <div class="mb-3">
-                                <input type="text" class="form-control" placeholder="Nombre" required>
-                            </div>
+						<label for="loginPassword" class="form-label">Contraseña</label>
+						 <input type="password" class="form-control" id="contactPassword" placeholder="Ingresa tu contraseña" required>	
+						</div>
                             <div class="mb-3">
                                 <input type="email" class="form-control" placeholder="Correo electrónico" required>
                             </div>
@@ -645,11 +724,10 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-							<div class="mb-3">
-								<label for="adminPassword" class="form-label">Contraseña</label>
-								<input type="password" class="form-control" id="createStorePassword" placeholder="propietario123" required>
-							</div>
-						</div>
+                            <div class="mb-3">
+								<label for="loginPassword" class="form-label">Contraseña</label>
+								<input type="password" class="form-control" id="createStorePassword" placeholder="Ingresa tu contraseña" required>							</div>
+                        </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="adminPhone" class="form-label">Teléfono</label>
@@ -714,12 +792,12 @@
                         <input type="hidden" id="loginRole" value="customer">
                         <input type="hidden" id="loginStoreId" value="">
                         <div class="mb-3">
-                            <label for="loginEmail" class="form-label">Correo electrónico</label>
-                            <input type="email" class="form-control" id="loginEmail" required>
-                        </div>
+							<label for="adminPassword" class="form-label">Contraseña</label>
+							<input type="password" class="form-control" id="adminPassword" placeholder="Ingresa tu contraseña" required>
+						</div>
                         <div class="mb-3">
                             <label for="loginPassword" class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="loginPassword" required>
+                            <input type="password" class="form-control" id="loginPassword3" required>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="rememberMe">
@@ -748,9 +826,8 @@
 						<input type="text" class="form-control" id="adminUsername" placeholder="propietario" required>
 					</div>
 					<div class="mb-3">
-						<label for="adminPassword" class="form-label">Contraseña</label>
-						<input type="password" class="form-control" id="adminPassword" placeholder="propietario123" required>
-					</div>
+						<label for="loginPassword" class="form-label">Contraseña</label>
+						<input type="password" class="form-control" id="adminPassword" placeholder="Ingresa tu contraseña" required>					</div>
 					<div class="d-grid">
 						<button type="button" class="btn btn-primary" onclick="loginAsOwner()">Ingresar como Propietario</button>
 					</div>
@@ -1210,6 +1287,130 @@
 						</table>
 					</div>
 				</div>
+				<!-- NUEVA: Platform Configuration Tab -->
+				<div id="adminPlatformTab" class="admin-tab-content">
+					<h5 class="mb-4">Configuración de la Plataforma</h5>
+					
+					<!-- Sección Hero/Banner Principal -->
+					<div class="card mb-4">
+						<div class="card-header bg-primary text-white">
+							<i class="fas fa-home"></i> Sección de Inicio (Hero)
+						</div>
+						<div class="card-body">
+							<form id="heroConfigForm">
+								<div class="mb-3">
+									<label for="heroTitle" class="form-label">Título Principal</label>
+									<input type="text" class="form-control" id="heroTitle" value="Bienvenido a PaTí">
+								</div>
+								<div class="mb-3">
+									<label for="heroSubtitle" class="form-label">Subtítulo</label>
+									<input type="text" class="form-control" id="heroSubtitle" value='"De todo" para todos los gustos y necesidades'>
+								</div>
+								<div class="mb-3">
+									<label for="heroImage" class="form-label">URL de Imagen de Fondo</label>
+									<input type="url" class="form-control" id="heroImage" value="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80">
+								</div>
+								<div class="row">
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="heroBtn1Text" class="form-label">Texto Botón 1</label>
+											<input type="text" class="form-control" id="heroBtn1Text" value="Entra a tu tienda ahora">
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="heroBtn2Text" class="form-label">Texto Botón 2</label>
+											<input type="text" class="form-control" id="heroBtn2Text" value="Monta tu tienda hoy">
+										</div>
+									</div>
+								</div>
+								<button type="button" class="btn btn-primary" onclick="saveHeroConfig()">
+									<i class="fas fa-save"></i> Guardar Cambios
+								</button>
+							</form>
+						</div>
+					</div>
+					
+					<!-- Sección "Nosotros" -->
+					<div class="card mb-4">
+						<div class="card-header bg-success text-white">
+							<i class="fas fa-info-circle"></i> Sección "Nosotros"
+						</div>
+						<div class="card-body">
+							<form id="aboutConfigForm">
+								<div class="mb-3">
+									<label for="aboutTitle" class="form-label">Título</label>
+									<input type="text" class="form-control" id="aboutTitle" value="Acerca de PaTí">
+								</div>
+								<div class="mb-3">
+									<label for="aboutDescription" class="form-label">Descripción Principal</label>
+									<textarea class="form-control" id="aboutDescription" rows="4">PaTí es tu plataforma de tiendas en línea donde encontrarás "de todo" para satisfacer todas tus necesidades. Nuestra misión es ofrecerte productos de calidad a precios accesibles con un servicio de entrega a domicilio rápido y confiable.</textarea>
+								</div>
+								<div class="mb-3">
+									<label for="deliveryPrice" class="form-label">Precio de Envío (menos de $50)</label>
+									<input type="text" class="form-control" id="deliveryPrice" value="$2.50">
+								</div>
+								<div class="mb-3">
+									<label for="freeDeliveryThreshold" class="form-label">Umbral para envío gratis</label>
+									<input type="text" class="form-control" id="freeDeliveryThreshold" value="$50">
+								</div>
+								<div class="mb-3">
+									<label for="deliveryHours" class="form-label">Horario de Entrega</label>
+									<input type="text" class="form-control" id="deliveryHours" value="lunes a sábado de 9:00 am a 8:00 pm">
+								</div>
+								<div class="mb-3">
+									<label for="amazedPersonText" class="form-label">Texto "Persona Asombrada"</label>
+									<textarea class="form-control" id="amazedPersonText" rows="3">¡Estoy asombrado! Nunca imaginé encontrar tantos productos de calidad en un solo lugar. PaTí tiene todo lo que necesito y a precios increíbles. ¡La entrega a domicilio es un servicio excelente!</textarea>
+								</div>
+								<button type="button" class="btn btn-success" onclick="saveAboutConfig()">
+									<i class="fas fa-save"></i> Guardar Cambios
+								</button>
+							</form>
+						</div>
+					</div>
+					
+					<!-- Sección de Contacto -->
+					<div class="card">
+						<div class="card-header bg-info text-white">
+							<i class="fas fa-address-book"></i> Información de Contacto
+						</div>
+						<div class="card-body">
+							<form id="contactConfigForm">
+								<div class="row">
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="contactAddress" class="form-label">Dirección</label>
+											<input type="text" class="form-control" id="contactConfigAddress" value="Av. Principal #123, Ciudad">
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="contactPhone" class="form-label">Teléfono</label>
+											<input type="text" class="form-control" id="contactConfigPhone" value="(123) 456-7890">
+										</div>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="contactEmail" class="form-label">Email</label>
+											<input type="email" class="form-control" id="contactConfigEmail" value="info@pati.com">
+										</div>
+									</div>
+									<div class="col-md-6">
+										<div class="mb-3">
+											<label for="contactHours" class="form-label">Horario de Atención</label>
+											<input type="text" class="form-control" id="contactConfigHours" value="Lunes a Sábado: 9:00 am - 8:00 pm">
+										</div>
+									</div>
+								</div>
+								<button type="button" class="btn btn-info" onclick="saveContactConfig()">
+									<i class="fas fa-save"></i> Guardar Cambios
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
 				<!-- Settings Tab -->
 				<div id="adminSettingsTab" class="admin-tab-content">
 					<h5 class="mb-4">Configuración de Cuenta</h5>
@@ -1590,8 +1791,9 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
-<script src="app.js"></script>
-     
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- View Store Modal -->
     <div class="modal fade" id="viewStoreModal" tabindex="-1">
         <div class="modal-dialog">
@@ -2145,12 +2347,26 @@
             </div>
         </div>
     </div>
-	
-	</script>
-	<!-- Nuestra lógica de aplicación CORREGIDA (app.js) -->
+    <!-- Bootstrap JS, Chart.js y PocketBase -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
+    
+    <!-- Inicialización básica de PocketBase -->
+    <script>
+        // SOLO inicialización básica - NO duplicar código
+        if (typeof PB_URL === 'undefined') {
+            window.PB_URL = 'https://pati-platform.onrender.com';
+        }
+        
+        if (typeof pb === 'undefined') {
+            window.pb = new PocketBase(PB_URL);
+            console.log('✅ PocketBase inicializado correctamente');
+        }
+    </script>
+    
+    <!-- Tu archivo JS principal -->
     <script src="app.js"></script>
 </body>
 </html>
-
-
 
