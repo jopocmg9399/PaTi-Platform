@@ -2146,78 +2146,11 @@
         </div>
     </div>
 	
-		// Estas son funciones "puente" que conectan los botones HTML con app.js
-		
-		// Navegación entre secciones
-		window.showSection = function(section) {
-			if (typeof appShowSection === 'function') {
-				appShowSection(section);
-			} else {
-				console.error('Error: La función showSection no está disponible en app.js');
-			}
-		};
-		
-		// Mostrar formulario de login
-		window.showLoginForm = function(role = 'customer') {
-			if (typeof appShowLoginForm === 'function') {
-				appShowLoginForm(role);
-			} else {
-				console.error('Error: La función showLoginForm no está disponible en app.js');
-			}
-		};
-		
-		// Mostrar formulario de registro
-		window.showRegisterForm = function(role = 'customer') {
-			if (typeof appShowRegisterForm === 'function') {
-				appShowRegisterForm(role);
-			} else {
-				console.error('Error: La función showRegisterForm no está disponible en app.js');
-			}
-		};
-		
-		// Mostrar selección de tiendas
-		window.showStoreSelection = function() {
-			if (typeof appShowStoreSelection === 'function') {
-				appShowStoreSelection();
-			} else {
-				console.error('Error: La función showStoreSelection no está disponible en app.js');
-			}
-		};
-		
-		// Login como propietario (para el modal de admin)
-		window.loginAsOwner = function() {
-			if (typeof appLoginAsOwner === 'function') {
-				appLoginAsOwner();
-			} else {
-				console.error('Error: La función loginAsOwner no está disponible en app.js');
-			}
-		};
-		
-		// Logout
-		window.logout = function() {
-			if (typeof appLogout === 'function') {
-				appLogout();
-			} else {
-				console.error('Error: La función logout no está disponible en app.js');
-			}
-		};
-		
-		// Función para mostrar login de tienda específica
-		window.showStoreLogin = function(storeId) {
-			if (typeof appShowStoreLogin === 'function') {
-				appShowStoreLogin(storeId);
-			} else {
-				console.error('Error: La función showStoreLogin no está disponible');
-			}
-		};
-		
-		console.log('Funciones de conexión cargadas correctamente');
 	</script>
 	<!-- Nuestra lógica de aplicación CORREGIDA (app.js) -->
     <script src="app.js"></script>
 </body>
 </html>
-</body>
-</html>
+
 
 
