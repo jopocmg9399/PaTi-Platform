@@ -1,435 +1,18 @@
-transforma este código al formato que me estás proponiendo y que ya funciona. código: <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PaTí - De todo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css " rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
-    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js "></script>
-    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js "></script>
-    <style>
-        :root {
-            --gold-light: #F5F0E6;
-            --gold: #D4AF37;
-            --gold-dark: #B8860B;
-            --gold-darker: #8B6510;
-            --brown: #8B4513;
-            --brown-dark: #654321;
-            --white: #FFFFFF;
-            --black: #000000;
-            --gray-light: #F8F9FA;
-            --gray: #6C757D;
-            --gray-dark: #343A40;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--gold-light);
-            color: var(--brown-dark);
-        }
-        .navbar {
-            background: linear-gradient(90deg, var(--gold-darker) 0%, var(--brown-dark) 100%);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        .navbar-brand {
-            font-weight: 800;
-            font-size: 1.8rem;
-            color: var(--gold) !important;
-            text-shadow: 1px 1px 2px var(--brown-dark);
-        }
-        .navbar-nav .nav-link {
-            color: var(--gold-light) !important;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        .navbar-nav .nav-link:hover {
-            color: var(--gold) !important;
-        }
-        .btn-primary {
-            background-color: var(--gold);
-            border-color: var(--gold);
-            color: var(--brown-dark);
-            font-weight: 600;
-        }
-        .btn-primary:hover {
-            background-color: var(--gold-dark);
-            border-color: var(--gold-dark);
-            color: var(--brown-dark);
-        }
-        .btn-outline-light {
-            color: var(--gold-light);
-            border-color: var(--gold-light);
-        }
-        .btn-outline-light:hover {
-            background-color: var(--gold);
-            border-color: var(--gold);
-            color: var(--brown-dark);
-        }
-        .hero-section {
-            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80 ') no-repeat center center;
-            background-size: cover;
-            color: var(--gold-light);
-            padding: 5rem 0;
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .hero-content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-            background-color: rgba(139, 101, 16, 0.8);
-            border-radius: 10px;
-        }
-        .product-card {
-            transition: transform 0.3s, box-shadow 0.3s;
-            height: 100%;
-            background-color: var(--white);
-            border: 1px solid var(--gold);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-        .product-image {
-            height: 200px;
-            object-fit: contain;
-            padding: 10px;
-            background-color: var(--gold-light);
-        }
-        .cart-icon {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: var(--gold);
-            color: var(--brown-dark);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            font-weight: bold;
-        }
-        .cart-badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--brown);
-            color: var(--gold-light);
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-        .about-section {
-            background-color: var(--white);
-            padding: 3rem 0;
-            border-top: 3px solid var(--gold);
-            border-bottom: 3px solid var(--gold);
-        }
-        .delivery-info {
-            background-color: var(--gold-light);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid var(--gold);
-            margin: 2rem 0;
-        }
-        .delivery-price {
-            font-weight: bold;
-            color: var(--brown);
-        }
-        .admin-container {
-            display: flex;
-            min-height: 100vh;
-        }
-        .admin-sidebar {
-            width: 250px;
-            background: linear-gradient(180deg, var(--brown-dark) 0%, var(--gold-darker) 100%);
-            color: var(--gold-light);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-        }
-        .admin-sidebar-header {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid var(--gold);
-        }
-        .admin-menu {
-            padding: 20px 0;
-        }
-        .admin-menu-item {
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: var(--gold-light);
-        }
-        .admin-menu-item:hover {
-            background-color: rgba(212, 175, 55, 0.2);
-        }
-        .admin-menu-item.active {
-            background-color: rgba(212, 175, 55, 0.3);
-            border-left: 4px solid var(--gold);
-        }
-        .admin-menu-item i {
-            margin-right: 10px;
-            font-size: 18px;
-        }
-        .admin-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background-color: var(--gold-light);
-        }
-        .admin-topbar {
-            background-color: var(--white);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border-bottom: 3px solid var(--gold);
-        }
-        .logout-btn {
-            background-color: var(--brown);
-            color: var(--gold-light);
-            padding: 8px 15px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .logout-btn:hover {
-            background-color: var(--brown-dark);
-        }
-        .stats-card {
-            text-align: center;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            color: var(--white);
-            background: linear-gradient(90deg, var(--gold-darker) 0%, var(--brown-dark) 100%);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .category-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1;
-            background-color: var(--brown);
-            color: var(--gold-light);
-        }
-        .modal-content {
-            border: 2px solid var(--gold);
-            border-radius: 10px;
-        }
-        .modal-header {
-            background-color: var(--gold);
-            color: var(--brown-dark);
-            border-bottom: 2px solid var(--gold-dark);
-        }
-        .form-control:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
-        }
-        .about-content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-            background-color: var(--white);
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        .amazed-person {
-            display: flex;
-            align-items: center;
-            background-color: var(--gold-light);
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin: 2rem 0;
-            border-left: 4px solid var(--gold);
-        }
-        .amazed-person img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 1.5rem;
-            border: 3px solid var(--gold);
-        }
-        .table-responsive {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .table th {
-            background-color: var(--gold);
-            color: var(--brown-dark);
-        }
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-        }
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-        .product-summary {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .summary-card {
-            flex: 1;
-            min-width: 200px;
-            background: linear-gradient(90deg, var(--gold-darker) 0%, var(--brown-dark) 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .summary-value {
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .summary-label {
-            font-size: 14px;
-        }
-        .import-section {
-            background-color: var(--white);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--gold);
-        }
-        .admin-tab-content {
-            display: none;
-        }
-        #adminDashboardTab {
-            display: block;
-        }
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        .quantity-control button {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--gold);
-            color: var(--brown-dark);
-            border: none;
-            font-weight: bold;
-        }
-        .quantity-control input {
-            width: 50px;
-            text-align: center;
-            border: 1px solid var(--gold);
-            margin: 0 10px;
-            border-radius: 4px;
-        }
-        .price-tier {
-            font-size: 0.9rem;
-            color: var(--gray);
-            margin-top: 5px;
-        }
-        .price-tier span {
-            font-weight: bold;
-            color: var(--brown-dark);
-        }
-        .store-card {
-            background-color: var(--white);
-            border: 1px solid var(--gold);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: transform 0.3s;
-        }
-        .store-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        .store-status {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-        .status-active {
-            background-color: rgba(40, 167, 69, 0.2);
-            color: #28a745;
-        }
-        .status-inactive {
-            background-color: rgba(220, 53, 69, 0.2);
-            color: #dc3545;
-        }
-        .login-role-btn {
-            margin: 10px;
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            border-radius: 8px;
-            background-color: var(--gold);
-            color: var(--brown-dark);
-            border: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .login-role-btn:hover {
-            background-color: var(--gold-dark);
-            color: var(--brown-dark);
-            transform: translateY(-3px);
-        }
-        @media (max-width: 768px) {
-            .product-card {
-                margin-bottom: 20px;
-            }
-            .hero-section h1 {
-                font-size: 2rem;
-            }
-            .admin-container {
-                flex-direction: column;
-            }
-            .admin-sidebar {
-                width: 100%;
-            }
-            .amazed-person {
-                flex-direction: column;
-                text-align: center;
-            }
-            .amazed-person img {
-                margin-right: 0;
-                margin-bottom: 1rem;
-            }
-            .action-buttons {
-                flex-direction: column;
-            }
-            .product-summary {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="#" onclick="showSection('home')">PaTí</a>
+            <a class="navbar-brand" href="#">PaTí</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -440,10 +23,9 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                     <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('about')">Nosotros</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('contact')">Contactos</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" onclick="showStoreSelection()">Tiendas</a></li>
-                    <!-- ✅ CORRECCIÓN: Botón "Administrador" ahora llama a showAdminLogin() -->
                     <button class="btn btn-outline-light" onclick="showAdminLogin()">
-						<i class="fas fa-cog"></i> Administrador
-					</button>
+                        <i class="fas fa-cog"></i> Administrador
+                    </button>
                 </ul>
                 <div class="d-none" id="authButtons">
                     <button class="btn btn-outline-light me-2" onclick="showLoginForm()">
@@ -458,7 +40,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             </div>
         </div>
     </nav>
-	<div id="productsContainer"></div>
+
     <!-- Main Content Sections -->
     <div id="mainContent">
         <!-- Home Section -->
@@ -473,7 +55,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             </div>
             <div class="container mb-5">
                 <div class="amazed-person">
-                    <img src="https://cdn.b12.io/client_media/QxJcSkIK/ecb4925e-72e0-11f0-8eab-0242ac110002-jpeg-hero_image.jpeg " alt="Cliente asombrado">
+                    <img src="https://cdn.b12.io/client_media/QxJcSkIK/ecb4925e-72e0-11f0-8eab-0242ac110002-jpeg-hero_image.jpeg" alt="Cliente asombrado">
                     <div>
                         <h3>¡Estoy asombrado!</h3>
                         <p>Nunca imaginé encontrar tantos productos de calidad en un solo lugar. PaTí tiene todo lo que necesito y a precios increíbles. ¡La entrega a domicilio es un servicio excelente!</p>
@@ -518,7 +100,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                 <p>PaTí es tu plataforma de tiendas en línea donde encontrarás "de todo" para satisfacer todas tus necesidades. Nuestra misión es ofrecerte productos de calidad a precios accesibles con un servicio de entrega a domicilio rápido y confiable.</p>
                 <div class="delivery-info">
                     <h4><i class="fas fa-truck"></i> Servicio de Entrega</h4>
-                    <p>Ofrecemos entrega a domicilio en toda la ciudad. El costo de envío es de <span class="delivery-price">$2.50</span> para pedidos menores a $50. Para pedidos superiores a $50, el envío es <strong>GRATIS</strong>.</p>
+                    <p>Ofrecemos entrega a domicilio en toda la ciudad. El costo de envío es de <span class="delivery-price">$2.50</span> para pedidos menores a <strong>$50</strong>. Para pedidos superiores a <strong>$50</strong>, el envío es <strong>GRATIS</strong>.</p>
                     <p>Nuestro horario de entregas es de lunes a sábado de 9:00 am a 8:00 pm.</p>
                 </div>
                 <h4 class="mt-4">Nuestra Historia</h4>
@@ -672,7 +254,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                             <button class="login-role-btn" onclick="showLoginForm('customer')">
                                 <i class="fas fa-user me-2"></i> Cliente
                             </button>
-                            <button class="login-role-btn" onclick="showLoginForm('affiliate')">
+                            <button class="login-role-btn" onclick="showLoginForm('affilate')">
                                 <i class="fas fa-handshake me-2"></i> Afiliado
                             </button>
                             <button class="login-role-btn" onclick="showLoginForm('admin')">
@@ -717,7 +299,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             </div>
         </div>
     </div>
-    <!-- Admin Login Modal - CORREGIDO -->
+    <!-- Admin Login Modal -->
 	<div class="modal fade" id="adminLoginModal" tabindex="-1">
 		<div class="modal-dialog">
 			<div class="modal-content">
@@ -818,499 +400,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             </div>
         </div>
     </div>
-    <!-- Admin Panel -->
-	<div id="adminPanel" class="d-none">
-		<div class="admin-container">
-			<div class="admin-sidebar">
-				<div class="admin-sidebar-header">
-					<h3 id="adminPanelTitle">Panel de Administración</h3>
-				</div>
-				<div class="admin-menu" id="adminMenu">
-					<!-- El menú se generará dinámicamente por JavaScript -->
-				</div>
-			</div>
-			<div class="admin-content">
-				<div class="admin-topbar">
-					<h4 id="adminPanelHeader">Panel de Administración - PaTí</h4>
-					<div>
-						<button id="viewSiteButton" class="btn btn-outline-primary me-2" onclick="viewSite()" style="display: none;">
-							<i class="fas fa-globe"></i> Ver Sitio Web
-						</button>
-						<button class="logout-btn" onclick="logout()">
-							<i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-						</button>
-					</div>
-				</div>
-				<!-- Contenido de las pestañas -->
-				<div id="adminDashboardTab" class="admin-tab-content">
-					<h5 class="mb-4">Resumen del Sistema</h5>
-					<div class="product-summary">
-						<div class="summary-card">
-							<div class="summary-value">12</div>
-							<div class="summary-label">Tiendas</div>
-						</div>
-						<div class="summary-card">
-							<div class="summary-value">153</div>
-							<div class="summary-label">Productos</div>
-						</div>
-						<div class="summary-card">
-							<div class="summary-value">24</div>
-							<div class="summary-label">Pedidos Hoy</div>
-						</div>
-						<div class="summary-card">
-							<div class="summary-value">$1,245.80</div>
-							<div class="summary-label">Ventas Hoy</div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-8">
-							<div class="card mb-4">
-								<div class="card-header bg-primary text-white">
-									<i class="fas fa-chart-line"></i> Ventas de los últimos 7 días
-								</div>
-								<div class="card-body">
-									<canvas id="salesChart" height="250"></canvas>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4">
-							<div class="card mb-4">
-								<div class="card-header bg-success text-white">
-									<i class="fas fa-chart-pie"></i> Categorías más vendidas
-								</div>
-								<div class="card-body">
-									<canvas id="categoriesChart" height="250"></canvas>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="card">
-						<div class="card-header bg-info text-white">
-							<i class="fas fa-exclamation-circle"></i> Alertas y Notificaciones
-						</div>
-						<div class="card-body">
-							<div class="alert alert-warning">
-								<i class="fas fa-exclamation-triangle"></i> 5 productos con stock bajo
-							</div>
-							<div class="alert alert-info">
-								<i class="fas fa-info-circle"></i> 3 pedidos pendientes de envío
-							</div>
-							<div class="alert alert-success">
-								<i class="fas fa-check-circle"></i> Sistema funcionando correctamente
-							</div>
-						</div>
-					</div>
-				</div>
-				<!-- Stores Tab -->
-				<div id="adminStoresTab" class="admin-tab-content">
-					<div class="d-flex justify-content-between align-items-center mb-4">
-						<h5>Gestión de Tiendas</h5>
-						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStoreModal">
-							<i class="fas fa-plus"></i> Agregar Tienda
-						</button>
-					</div>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover">
-							<thead>
-								<tr>
-									<th>ID</th>
-									<th>Nombre</th>
-									<th>Categoría</th>
-									<th>Administrador</th>
-									<th>Estado</th>
-									<th>Acciones</th>
-								</tr>
-							</thead>
-							<tbody id="adminStoresTable">
-								<!-- Stores will be loaded here -->
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<!-- Products Tab -->
-				<div id="adminProductsTab" class="admin-tab-content">
-					<div class="d-flex justify-content-between align-items-center mb-4">
-						<h5>Gestión de Productos</h5>
-						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-							<i class="fas fa-plus"></i> Agregar Producto
-						</button>
-					</div>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover">
-							<thead>
-								<tr>
-									<th>ID</th>
-									<th>Nombre</th>
-									<th>Tienda</th>
-									<th>Categoría</th>
-									<th>Precios</th>
-									<th>Stock</th>
-									<th>Acciones</th>
-								</tr>
-							</thead>
-							<tbody id="adminProductsTable">
-								<!-- Products will be loaded here -->
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<!-- Categories Tab -->
-				<div id="adminCategoriesTab" class="admin-tab-content">
-					<div class="d-flex justify-content-between align-items-center mb-4">
-						<h5>Gestión de Categorías</h5>
-						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-							<i class="fas fa-plus"></i> Agregar Categoría
-						</button>
-					</div>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover">
-							<thead>
-								<tr>
-									<th>ID</th>
-									<th>Nombre</th>
-									<th>Descripción</th>
-									<th>Productos</th>
-									<th>Acciones</th>
-								</tr>
-							</thead>
-							<tbody id="adminCategoriesTable">
-								<!-- Categories will be loaded here -->
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<!-- Customers Tab -->
-				<div id="adminCustomersTab" class="admin-tab-content">
-					<h5 class="mb-4">Gestión de Clientes</h5>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover">
-							<thead>
-								<tr>
-									<th>ID</th>
-									<th>Nombre</th>
-									<th>Email</th>
-									<th>Tienda</th>
-									<th>Pedidos</th>
-									<th>Acciones</th>
-								</tr>
-							</thead>
-							<tbody id="adminCustomersTable">
-								<!-- Customers will be loaded here -->
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<!-- Affiliates Tab -->
-				<div id="adminAffiliatesTab" class="admin-tab-content">
-					<div class="d-flex justify-content-between align-items-center mb-4">
-						<h5>Gestión de Afiliados</h5>
-						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAffiliateModal">
-							<i class="fas fa-plus"></i> Agregar Afiliado
-						</button>
-					</div>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover">
-							<thead>
-								<tr>
-									<th>ID</th>
-									<th>Nombre</th>
-									<th>Email</th>
-									<th>Tienda</th>
-									<th>Comisión</th>
-									<th>Ventas</th>
-									<th>Estado</th>
-									<th>Acciones</th>
-								</tr>
-							</thead>
-							<tbody id="adminAffiliatesTable">
-								<!-- Affiliates will be loaded here -->
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<!-- Orders Tab -->
-				<div id="adminOrdersTab" class="admin-tab-content">
-					<h5 class="mb-4">Gestión de Pedidos</h5>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover">
-							<thead>
-								<tr>
-									<th>ID</th>
-									<th>Cliente</th>
-									<th>Tienda</th>
-									<th>Fecha</th>
-									<th>Total</th>
-									<th>Estado</th>
-									<th>Acciones</th>
-								</tr>
-							</thead>
-							<tbody id="adminOrdersTable">
-								<!-- Orders will be loaded here -->
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<!-- Reports Tab -->
-				<div id="adminReportsTab" class="admin-tab-content">
-					<h5 class="mb-4">Generación de Reportes</h5>
-					<div class="row mb-4">
-						<div class="col-md-4">
-							<div class="card">
-								<div class="card-body text-center">
-									<h5 class="card-title">Reporte de Ventas</h5>
-									<p class="card-text">Genera un reporte detallado de ventas por período</p>
-									<button class="btn btn-primary" onclick="generateReport('sales')">
-										<i class="fas fa-download"></i> Generar
-									</button>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4">
-							<div class="card">
-								<div class="card-body text-center">
-									<h5 class="card-title">Reporte de Productos</h5>
-									<p class="card-text">Reporte de productos más vendidos y stock</p>
-									<button class="btn btn-primary" onclick="generateReport('products')">
-										<i class="fas fa-download"></i> Generar
-									</button>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4">
-							<div class="card">
-								<div class="card-body text-center">
-									<h5 class="card-title">Reporte de Afiliados</h5>
-									<p class="card-text">Comisiones y desempeño de afiliados</p>
-									<button class="btn btn-primary" onclick="generateReport('affiliates')">
-										<i class="fas fa-download"></i> Generar
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="card">
-						<div class="card-header">
-							<h6>Reporte Personalizado</h6>
-						</div>
-						<div class="card-body">
-							<form id="customReportForm">
-								<div class="row mb-3">
-									<div class="col-md-4">
-										<label class="form-label">Tipo de Reporte</label>
-										<select class="form-select" id="reportType">
-											<option value="sales">Ventas</option>
-											<option value="products">Productos</option>
-											<option value="customers">Clientes</option>
-											<option value="affiliates">Afiliados</option>
-										</select>
-									</div>
-									<div class="col-md-4">
-										<label class="form-label">Fecha Inicio</label>
-										<input type="date" class="form-control" id="reportStartDate">
-									</div>
-									<div class="col-md-4">
-										<label class="form-label">Fecha Fin</label>
-										<input type="date" class="form-control" id="reportEndDate">
-									</div>
-								</div>
-								<button type="submit" class="btn btn-primary">
-									<i class="fas fa-download"></i> Generar Reporte Personalizado
-								</button>
-							</form>
-						</div>
-					</div>
-				</div>
-				<button onclick="exportData()">Exportar Datos</button>
-				<!-- Imports Tab -->
-				<div id="adminImportsTab" class="admin-tab-content">
-					<h5 class="mb-4">Importar Datos</h5>
-					<div class="import-section">
-						<h6><i class="fas fa-store"></i> Importar Tiendas</h6>
-						<p>Importa tiendas desde un archivo Excel (.xlsx). El archivo debe tener las columnas: Nombre, Categoría, Administrador, Email, Teléfono.</p>
-						<div class="input-group mb-3">
-							<input type="file" class="form-control" id="storesFile" accept=".xlsx">
-							<button class="btn btn-primary" type="button" onclick="importStores()">
-								<i class="fas fa-upload"></i> Importar Tiendas
-							</button>
-						</div>
-					</div>
-					<div class="import-section">
-						<h6><i class="fas fa-box"></i> Importar Productos</h6>
-						<p>Importa productos desde un archivo Excel (.xlsx). El archivo debe tener las columnas: Nombre, Tienda, Categoría, Precio1, Precio2, Precio3, Stock, Descripción.</p>
-						<div class="input-group mb-3">
-							<input type="file" class="form-control" id="productsFile" accept=".xlsx">
-							<button class="btn btn-primary" type="button" onclick="importProducts()">
-								<i class="fas fa-upload"></i> Importar Productos
-							</button>
-						</div>
-					</div>
-					<div class="import-section">
-						<h6><i class="fas fa-tags"></i> Importar Categorías</h6>
-						<p>Importa categorías desde un archivo Excel (.xlsx). El archivo debe tener las columnas: Nombre, Descripción.</p>
-						<div class="input-group mb-3">
-							<input type="file" class="form-control" id="categoriesFile" accept=".xlsx">
-							<button class="btn btn-primary" type="button" onclick="importCategories()">
-								<i class="fas fa-upload"></i> Importar Categorías
-							</button>
-						</div>
-					</div>
-					<div class="import-section">
-						<h6><i class="fas fa-users"></i> Importar Clientes</h6>
-						<p>Importa clientes desde un archivo Excel (.xlsx). El archivo debe tener las columnas: Nombre, Email, Teléfono, Dirección.</p>
-						<div class="input-group mb-3">
-							<input type="file" class="form-control" id="customersFile" accept=".xlsx">
-							<button class="btn btn-primary" type="button" onclick="importCustomers()">
-								<i class="fas fa-upload"></i> Importar Clientes
-							</button>
-						</div>
-					</div>
-					<div class="import-section">
-						<h6><i class="fas fa-handshake"></i> Importar Afiliados</h6>
-						<p>Importa afiliados desde un archivo Excel (.xlsx). El archivo debe tener las columnas: Nombre, Email, Comisión, Estado.</p>
-						<div class="input-group mb-3">
-							<input type="file" class="form-control" id="affiliatesFile" accept=".xlsx">
-							<button class="btn btn-primary" type="button" onclick="importAffiliates()">
-								<i class="fas fa-upload"></i> Importar Afiliados
-							</button>
-						</div>
-					</div>
-				</div>
-				<!-- Commissions Tab -->
-				<div id="adminCommissionsTab" class="admin-tab-content">
-					<h5 class="mb-4">Gestión de Comisiones por Tienda</h5>
-					<div class="table-responsive">
-						<table class="table table-striped table-hover">
-							<thead>
-								<tr>
-									<th>ID</th>
-									<th>Tienda</th>
-									<th>Comisión Global (%)</th>
-									<th>Acciones</th>
-								</tr>
-							</thead>
-							<tbody id="adminCommissionsTable">
-								<!-- Las comisiones se cargarán aquí -->
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<!-- Settings Tab -->
-				<div id="adminSettingsTab" class="admin-tab-content">
-					<h5 class="mb-4">Configuración de Cuenta</h5>
-					<div class="row">
-						<div class="col-md-6">
-							<div class="card mb-4">
-								<div class="card-header bg-primary text-white">
-									<i class="fas fa-user"></i> Datos Personales
-								</div>
-								<div class="card-body">
-									<form id="ownerDataForm">
-										<div class="mb-3">
-											<label for="ownerName" class="form-label">Nombre</label>
-											<input type="text" class="form-control" id="ownerName" value="Propietario PaTí">
-										</div>
-										<div class="mb-3">
-											<label for="ownerEmail" class="form-label">Correo electrónico</label>
-											<input type="email" class="form-control" id="ownerEmail" value="propietario@pati.com">
-										</div>
-										<div class="mb-3">
-											<label for="ownerPhone" class="form-label">Teléfono</label>
-											<input type="tel" class="form-control" id="ownerPhone" value="(123) 456-7890">
-										</div>
-										<button type="submit" class="btn btn-primary">Actualizar Datos</button>
-									</form>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="card mb-4">
-								<div class="card-header bg-warning text-dark">
-									<i class="fas fa-lock"></i> Cambiar Contraseña
-								</div>
-								<div class="card-body">
-									<form id="ownerPasswordForm">
-										<div class="mb-3">
-											<label for="currentPassword" class="form-label">Contraseña Actual</label>
-											<input type="password" class="form-control" id="currentPassword" required>
-										</div>
-										<div class="mb-3">
-											<label for="newPassword" class="form-label">Nueva Contraseña</label>
-											<input type="password" class="form-control" id="newPassword" required>
-										</div>
-										<div class="mb-3">
-											<label for="confirmNewPassword" class="form-label">Confirmar Nueva Contraseña</label>
-											<input type="password" class="form-control" id="confirmNewPassword" required>
-										</div>
-										<button type="submit" class="btn btn-warning">Cambiar Contraseña</button>
-									</form>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="card">
-						<div class="card-header bg-info text-white">
-							<i class="fas fa-cogs"></i> Configuración de Contacto
-						</div>
-						<div class="card-body">
-							<form id="contactSettingsForm">
-								<div class="row">
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label for="contactAddress" class="form-label">Dirección</label>
-											<input type="text" class="form-control" id="contactAddress" value="Av. Principal #123, Ciudad">
-										</div>
-									</div>
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label for="contactPhone" class="form-label">Teléfono de Contacto</label>
-											<input type="tel" class="form-control" id="contactPhone" value="(123) 456-7890">
-										</div>
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label for="contactEmail" class="form-label">Correo de Contacto</label>
-											<input type="email" class="form-control" id="contactEmail" value="info@pati.com">
-										</div>
-									</div>
-									<div class="col-md-6">
-										<div class="mb-3">
-											<label for="contactHours" class="form-label">Horario de Atención</label>
-											<input type="text" class="form-control" id="contactHours" value="Lunes a Sábado: 9:00 am - 8:00 pm">
-										</div>
-									</div>
-								</div>
-								<button type="submit" class="btn btn-info">Actualizar Configuración</button>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- index.html -->
-	<input type="file" id="fileInput" />
-	<button onclick="importData()">Importar Datos</button>
-
-	<script>
-	async function importData() {
-	  const fileInput = document.getElementById('fileInput');
-	  const file = fileInput.files[0];
-	  if (!file) {
-	   alert('Por favor, selecciona un archivo para importar');
-	   return;
-	  }
-	  const reader = new FileReader();
-	  reader.onload = async (e) => {
-		const data = JSON.parse(e.target.result);
-		await fetchFromBackend('/api/import', 'POST', data);
-		console.log('Datos importados con éxito');
-	  };
-	  reader.readAsText(file);
-	}
-	</script>
-    <!-- Shopping Cart -->
+    <!-- Cart Offcanvas -->
     <div class="cart-icon" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
         <i class="fas fa-shopping-cart fa-lg"></i>
         <span class="cart-badge" id="cartCount">0</span>
@@ -1594,12 +684,11 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
     </div>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js "></script>
-	<script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js "></script>
-<script src="js/app.js"></script>
+	<script src="app.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js "></script>
     <script>
-        // ====== DATOS REALES DE TU EXCEL ======
+        // ====== DATOS REALES DE TU EXCEL =====
         const categories = [
             { id: 'C001', name: 'Electrónica', description: '' },
             { id: 'C002', name: 'Hogar', description: '' },
@@ -1609,18 +698,18 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             { id: 'C006', name: 'Deportiva', description: '' }
         ];
         let stores = [
-            { id: 1, name: "TechZone", categoryId: 'C001', admin: "admin@techzone.com", status: "Activo", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "La mejor tecnología al mejor precio" },
+            { id: 1, name: "TechZone", categoryId: 'C001', admin: "admin@techzone.com", status: "Activo", image: "https://images.unsplash.com/photo-1561154464-82e9adf327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "La mejor tecnología al mejor precio" },
             { id: 2, name: "FashionStyle", categoryId: 'C004', admin: "admin@fashionstyle.com", status: "Activo", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Moda para todos los estilos" },
             { id: 3, name: "HomeComfort", categoryId: 'C002', admin: "admin@homecomfort.com", status: "Inactivo", image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Todo para tu hogar" },
             { id: 4, name: "SportsPro", categoryId: 'C006', admin: "admin@sportspro.com", status: "Activo", image: "https://images.unsplash.com/photo-1614632537197-38a17061c2bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Equipamiento deportivo profesional" }
         ];
         let products = [
-            { id: 1, name: "Smartphone XYZ", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 299.99, price2: 279.99, price3: 259.99, stock: 15, image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "El último smartphone con todas las características que necesitas." },
+            { id: 1, name: "Smartphone XYZ", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 299.99, price2: 279.99, price3: 259.99, stock: 15, image: "https://images.unsplash.com/photo-1511707171634-5f8a2d4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "El último smartphone con todas las características que necesitas." },
             { id: 2, name: "Auriculares Bluetooth", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 49.99, price2: 44.99, price3: 39.99, stock: 30, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Auriculares inalámbricos con sonido de alta calidad." },
             { id: 3, name: "Camiseta Deportiva", store: "FashionStyle", storeId: 2, categoryId: 'C004', price1: 24.99, price2: 22.99, price3: 19.99, stock: 50, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Camiseta cómoda y transpirable para actividades deportivas." },
             { id: 4, name: "Juego de Sábanas", store: "HomeComfort", storeId: 3, categoryId: 'C002', price1: 39.99, price2: 36.99, price3: 34.99, stock: 20, image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Juego de sábanas de algodón egipcio para una noche de sueño placentero." },
             { id: 5, name: "Balón de Fútbol", store: "SportsPro", storeId: 4, categoryId: 'C006', price1: 19.99, price2: 18.49, price3: 16.99, stock: 40, image: "https://images.unsplash.com/photo-1614632537197-38a17061c2bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Balón oficial para partidos de fútbol profesional." },
-            { id: 6, name: "Tablet ABC", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 199.99, price2: 189.99, price3: 179.99, stock: 10, image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Tablet perfecta para trabajo y entretenimiento." },
+            { id: 6, name: "Tablet ABC", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 199.99, price2: 189.99, price3: 179.99, stock: 10, image: "https://images.unsplash.com/photo-1561154464-82e9adf327c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Tablet perfecta para trabajo y entretenimiento." },
             { id: 7, name: "Zapatillas Running", store: "SportsPro", storeId: 4, categoryId: 'C006', price1: 79.99, price2: 74.99, price3: 69.99, stock: 25, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Zapatillas diseñadas para corredores profesionales." },
             { id: 8, name: "Cafetera Automática", store: "HomeComfort", storeId: 3, categoryId: 'C002', price1: 89.99, price2: 84.99, price3: 79.99, stock: 15, image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80 ", description: "Cafetera programable para empezar el día con el mejor café." }
         ];
@@ -1799,7 +888,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             if (role === 'affiliate') {
                 affiliateFields.style.display = 'block';
             } else {
-                affiliateFields.style.display = 'none'; 
+                affiliateFields.style.display = 'none';
             }
             const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
             registerModal.show();
@@ -1961,7 +1050,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                                     <span>11-50: </span><span>$${product.price2.toFixed(2)}</span>
                                 </div>
                                 <div class="price-tier">
-                                    <span>51+: </span><span>$${product.price3.toFixed(2)}</span>
+                                    <span>51+: </span><span>$$${product.price3.toFixed(2)}</span>
                                 </div>
                                 <div class="quantity-control">
                                     <button type="button" onclick="decreaseQuantity(${product.id})">-</button>
@@ -2038,7 +1127,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                                     <small class="text-muted">$${item.unitPrice.toFixed(2)} x ${item.quantity}</small>
                                 </div>
                                 <div class="d-flex align-items-center">
-                                    <span class="text-muted">$${itemTotal.toFixed(2)}</span>
+                                    <span class="text-muted">$$${itemTotal.toFixed(2)}</span>
                                     <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeFromCart(${item.id})">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -2173,7 +1262,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             updateCart();
             document.getElementById('mainContent').classList.remove('d-none');
             document.getElementById('adminPanel').classList.add('d-none');
-            document.getElementById('authButtons').classList.add('d-none');
+            document.getElementById('authButtons').classList.remove('d-none');
             document.getElementById('logoutButton').classList.add('d-none');
             showSection('home');
             showNotification('Has cerrado sesión correctamente');
@@ -2353,10 +1442,10 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                 tableBody.innerHTML += row;
             });
         }
-        function loadAdminProducts() {
+        function loadAdminProducts(filteredProducts) {
             const tableBody = document.getElementById('adminProductsTable');
             tableBody.innerHTML = '';
-            products.forEach(product => {
+            filteredProducts.forEach(product => {
                 const category = categories.find(c => c.id === product.categoryId)?.name || 'Sin categoría';
                 const row = `
                     <tr>
@@ -2413,10 +1502,10 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                 tableBody.innerHTML += row;
             });
         }
-        function loadAdminCustomers() {
+        function loadAdminCustomers(filteredCustomers) {
             const tableBody = document.getElementById('adminCustomersTable');
             tableBody.innerHTML = '';
-            customers.forEach(customer => {
+            filteredCustomers.forEach(customer => {
                 const row = `
                     <tr>
                         <td>${customer.id}</td>
@@ -2440,10 +1529,10 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                 tableBody.innerHTML += row;
             });
         }
-        function loadAdminAffiliates() {
+        function loadAdminAffiliates(filteredAffiliates) {
             const tableBody = document.getElementById('adminAffiliatesTable');
             tableBody.innerHTML = '';
-            affiliates.forEach(affiliate => {
+            filteredAffiliates.forEach(affiliate => {
                 const row = `
                     <tr>
                         <td>${affiliate.id}</td>
@@ -2469,7 +1558,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
                 tableBody.innerHTML += row;
             });
         }
-        function loadAdminOrders() {
+        function loadAdminOrders(filteredOrders) {
             const tableBody = document.getElementById('adminOrdersTable');
             tableBody.innerHTML = '';
             orders.forEach(order => {
@@ -2661,14 +1750,6 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
             showNotification('Afiliado agregado correctamente');
         }
         function toggleStoreStatus(storeId) {
-            const store = stores.find(s => s.id === storeId);
-            if (store) {
-                store.status = store.status === 'Activo' ? 'Inactivo' : 'Activo';
-                loadAdminStores();
-                showNotification(`Tienda ${store.name} ${store.status === 'Activo' ? 'activada' : 'desactivada'} correctamente`);
-            }
-        }
-        function deleteStore(storeId) {
             if (confirm('¿Estás seguro de que quieres eliminar esta tienda? Esta acción no se puede deshacer.')) {
                 const index = stores.findIndex(s => s.id === storeId);
                 if (index !== -1) {
@@ -2715,7 +1796,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
         function deleteCustomer(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
                 const index = customers.findIndex(c => c.id === id);
-                if (index !== -1) {
+                if (index !== - 1) {
                     customers.splice(index, 1);
                     loadAdminCustomers();
                     showNotification('Cliente eliminado correctamente');
@@ -2725,7 +1806,7 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
         function deleteAffiliate(id) {
             if (confirm('¿Estás seguro de que quieres eliminar este afiliado?')) {
                 const index = affiliates.findIndex(a => a.id === id);
-                if (index !== -1) {
+                if (index !== - 1) {
                     affiliates.splice(index, 1);
                     loadAdminAffiliates();
                     showNotification('Afiliado eliminado correctamente');
@@ -3225,599 +2306,5 @@ transforma este código al formato que me estás proponiendo y que ya funciona. 
 			showNotification('Has iniciado sesión como Propietario');
 		}
     </script>
-    <!-- View Store Modal -->
-    <div class="modal fade" id="viewStoreModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles de la Tienda</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center mb-3">
-                        <img id="viewStoreImage" src="" alt="Imagen de la tienda" style="max-width: 100%; height: auto; border-radius: 8px;">
-                    </div>
-                    <div class="mb-2">
-                        <strong>Nombre:</strong> <span id="viewStoreName"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Categoría:</strong> <span id="viewStoreCategory"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Administrador:</strong> <span id="viewStoreAdmin"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Estado:</strong> <span id="viewStoreStatus"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Descripción:</strong> <span id="viewStoreDescription"></span>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- View Product Modal -->
-    <div class="modal fade" id="viewProductModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Producto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="text-center mb-3">
-                        <img id="viewProductImage" src="" alt="Imagen del producto" style="max-width: 100%; height: auto; border-radius: 8px;">
-                    </div>
-                    <div class="mb-2">
-                        <strong>Nombre:</strong> <span id="viewProductName"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Tienda:</strong> <span id="viewProductStore"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Categoría:</strong> <span id="viewProductCategory"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Precios:</strong>
-                        <div id="viewProductPrices"></div>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Stock:</strong> <span id="viewProductStock"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Descripción:</strong> <span id="viewProductDescription"></span>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- View Category Modal -->
-    <div class="modal fade" id="viewCategoryModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles de la Categoría</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <strong>Nombre:</strong> <span id="viewCategoryName"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Descripción:</strong> <span id="viewCategoryDescription"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Productos:</strong> <span id="viewCategoryProducts"></span>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- View Customer Modal -->
-    <div class="modal fade" id="viewCustomerModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Cliente</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <strong>Nombre:</strong> <span id="viewCustomerName"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Email:</strong> <span id="viewCustomerEmail"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Teléfono:</strong> <span id="viewCustomerPhone"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Tienda:</strong> <span id="viewCustomerStore"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Pedidos:</strong> <span id="viewCustomerOrders"></span>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- View Affiliate Modal -->
-    <div class="modal fade" id="viewAffiliateModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Afiliado</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <strong>Nombre:</strong> <span id="viewAffiliateName"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Email:</strong> <span id="viewAffiliateEmail"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Tienda:</strong> <span id="viewAffiliateStore"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Comisión:</strong> <span id="viewAffiliateCommission"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Ventas:</strong> <span id="viewAffiliateSales"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Estado:</strong> <span id="viewAffiliateStatus"></span>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- View Order Modal -->
-    <div class="modal fade" id="viewOrderModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Pedido</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <strong>ID:</strong> <span id="viewOrderId"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Cliente:</strong> <span id="viewOrderCustomer"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Tienda:</strong> <span id="viewOrderStore"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Fecha:</strong> <span id="viewOrderDate"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Total:</strong> <span id="viewOrderTotal"></span>
-                    </div>
-                    <div class="mb-2">
-                        <strong>Estado:</strong> <span id="viewOrderStatus"></span>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Edit Store Modal -->
-    <div class="modal fade" id="editStoreModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Tienda</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editStoreForm">
-                        <input type="hidden" id="editStoreId">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editStoreName" class="form-label">Nombre de la Tienda</label>
-                                    <input type="text" class="form-control" id="editStoreName" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editStoreCategory" class="form-label">Categoría Principal</label>
-                                    <select class="form-select" id="editStoreCategory" required>
-                                        <option value="">Seleccionar categoría</option>
-                                        <option value="C001">Electrónica</option>
-                                        <option value="C002">Hogar</option>
-                                        <option value="C003">Útiles y Herramientas</option>
-                                        <option value="C004">Ropas</option>
-                                        <option value="C005">Calzados</option>
-                                        <option value="C006">Deportiva</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editStoreAdmin" class="form-label">Correo del Administrador</label>
-                                    <input type="email" class="form-control" id="editStoreAdmin" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editStoreStatus" class="form-label">Estado</label>
-                                    <select class="form-select" id="editStoreStatus" required>
-                                        <option value="Activo">Activo</option>
-                                        <option value="Inactivo">Inactivo</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editStoreDescription" class="form-label">Descripción de la Tienda</label>
-                            <textarea class="form-control" id="editStoreDescription" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editStoreImage" class="form-label">URL de Imagen Representativa</label>
-                            <input type="url" class="form-control" id="editStoreImage">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveStore()">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Edit Product Modal -->
-    <div class="modal fade" id="editProductModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Producto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editProductForm">
-                        <input type="hidden" id="editProductId">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editProductName" class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" id="editProductName" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editProductStore" class="form-label">Tienda</label>
-                                    <select class="form-select" id="editProductStore" required>
-                                        <option value="">Seleccionar tienda</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editProductCategory" class="form-label">Categoría</label>
-                                    <select class="form-select" id="editProductCategory" required>
-                                        <option value="">Seleccionar categoría</option>
-                                        <option value="C001">Electrónica</option>
-                                        <option value="C002">Hogar</option>
-                                        <option value="C003">Útiles y Herramientas</option>
-                                        <option value="C004">Ropas</option>
-                                        <option value="C005">Calzados</option>
-                                        <option value="C006">Deportiva</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editProductStock" class="form-label">Stock</label>
-                                    <input type="number" class="form-control" id="editProductStock" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Precios por Cantidad</label>
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text">1-10</span>
-                                        <input type="number" step="0.01" class="form-control" id="editProductPrice1" placeholder="Precio" required>
-                                        <span class="input-group-text">USD</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text">11-50</span>
-                                        <input type="number" step="0.01" class="form-control" id="editProductPrice2" placeholder="Precio" required>
-                                        <span class="input-group-text">USD</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text">51+</span>
-                                        <input type="number" step="0.01" class="form-control" id="editProductPrice3" placeholder="Precio" required>
-                                        <span class="input-group-text">USD</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editProductDescription" class="form-label">Descripción</label>
-                            <textarea class="form-control" id="editProductDescription" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editProductImage" class="form-label">Imagen URL</label>
-                            <input type="url" class="form-control" id="editProductImage">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveProduct()">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Edit Category Modal -->
-    <div class="modal fade" id="editCategoryModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Categoría</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editCategoryForm">
-                        <input type="hidden" id="editCategoryId">
-                        <div class="mb-3">
-                            <label for="editCategoryName" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="editCategoryName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editCategoryDescription" class="form-label">Descripción</label>
-                            <textarea class="form-control" id="editCategoryDescription" rows="3"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCategory()">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Edit Customer Modal -->
-    <div class="modal fade" id="editCustomerModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Cliente</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editCustomerForm">
-                        <input type="hidden" id="editCustomerId">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editCustomerName" class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" id="editCustomerName" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editCustomerEmail" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="editCustomerEmail" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editCustomerPhone" class="form-label">Teléfono</label>
-                                    <input type="tel" class="form-control" id="editCustomerPhone" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editCustomerStore" class="form-label">Tienda</label>
-                                    <select class="form-select" id="editCustomerStore" required>
-                                        <option value="">Seleccionar tienda</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editCustomerOrders" class="form-label">Pedidos</label>
-                            <input type="number" class="form-control" id="editCustomerOrders" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveCustomer()">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Edit Affiliate Modal -->
-    <div class="modal fade" id="editAffiliateModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Afiliado</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editAffiliateForm">
-                        <input type="hidden" id="editAffiliateId">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editAffiliateName" class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" id="editAffiliateName" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editAffiliateEmail" class="form-label">Email</label>
-                                    <input type="email" class="form-control" id="editAffiliateEmail" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editAffiliateStore" class="form-label">Tienda</label>
-                                    <select class="form-select" id="editAffiliateStore" required>
-                                        <option value="">Seleccionar tienda</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editAffiliateCommission" class="form-label">Comisión (%)</label>
-                                    <input type="number" class="form-control" id="editAffiliateCommission" min="0" max="100" step="0.1" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editAffiliateStatus" class="form-label">Estado</label>
-                            <select class="form-select" id="editAffiliateStatus" required>
-                                <option value="Activo">Activo</option>
-                                <option value="Inactivo">Inactivo</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveAffiliate()">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Edit Order Modal -->
-    <div class="modal fade" id="editOrderModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Pedido</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editOrderForm">
-                        <input type="hidden" id="editOrderId">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editOrderCustomer" class="form-label">Cliente</label>
-                                    <input type="text" class="form-control" id="editOrderCustomer" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editOrderStore" class="form-label">Tienda</label>
-                                    <select class="form-select" id="editOrderStore" required>
-                                        <option value="">Seleccionar tienda</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editOrderDate" class="form-label">Fecha</label>
-                                    <input type="date" class="form-control" id="editOrderDate" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editOrderTotal" class="form-label">Total</label>
-                                    <input type="number" step="0.01" class="form-control" id="editOrderTotal" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editOrderStatus" class="form-label">Estado</label>
-                            <select class="form-select" id="editOrderStatus" required>
-                                <option value="Procesando">Procesando</option>
-                                <option value="En camino">En camino</option>
-                                <option value="Entregado">Entregado</option>
-                                <option value="Cancelado">Cancelado</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="saveOrder()">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-    </div>
-	<script src="js/app.js"></script>
-	
-	<script>
-	async function exportData() {
-	  try {
-		const dataExported = await fetchFromBackend('/path-to-export-endpoint');
-	   // Manejar la descarga del archivo o notificar al usuario
-		console.log('Datos exportados con éxito');
-	  } catch (error) {
-		console.error('Error al exportar datos', error);
-	  }
-	}
-	</script>
-	<script>
-	document.addEventListener('DOMContentLoaded', function() {
-	  loadProducts();
-	});
-
-	async function loadProducts() {
-	  try {
-		const products = await fetchFromBackend('/api/products');
-		const productsContainer = document.getElementById('productsContainer');
-		 products.forEach(product => {
-		   productsContainer.innerHTML += `
-			 <div class="col-md-4">
-			   <div class="card mb-4">
-				 <img src="${product.image}" class="card-img-top" alt="${product.name}">
-				 <div class="card-body">
-				   <h5 class="card-title">${product.name}</h5>
-				   <p class="card-text">${product.description}</p>
-				   <button class="btn btn-primary">Add to Cart</button>
-				 </div>
-			   </div>
-			 </div>
-		   `;
-		 });
-	   } catch (error) {
-		 console.error('Error loading products:', error);
-	   }
-	}
-	</script>
 </body>
 </html>
