@@ -9,19 +9,17 @@ console.log('Conectando a PocketBase:', PB_URL);
 let currentUser = null;
 let currentStoreId = null;
 let cart = [];
-let stores = []; // Cache local de tiendas
-let categories = []; // Cache local de categorías
-let products = []; // Cache local de productos
+let stores = [];
+let categories = [];
+let products = [];
 
-
-// Inicialización
+// ====== INICIALIZACIÓN ======
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('App iniciada, conectando a:', PB_URL);
+    console.log('App iniciada');
     checkAuth();
-    loadInitialData();
     setupEventListeners();
     
-    // Si estamos en la página principal, cargar tiendas destacadas
+    // Cargar tiendas destacadas
     if (document.getElementById('featuredStores')) {
         loadFeaturedStores();
     }
@@ -34,6 +32,9 @@ async function checkAuth() {
             currentUser = pb.authStore.model;
             updateUIForLoggedInUser();
             console.log('Usuario autenticado:', currentUser.email);
+            
+            // Si ya está autenticado, cargar datos
+            await loadProducts();
         }
     } catch (error) {
         console.error('Error verificando autenticación:', error);
@@ -53,191 +54,187 @@ function updateUIForLoggedInUser() {
     }
 }
 
-async function userLogin(email, password, role, storeId) {
+// ====== LOGIN COMO PROPIETARIO (CORREGIDO) ======
+window.loginAsOwner = async () => {
+    const username = document.getElementById('adminUsername')?.value.trim();
+    const password = document.getElementById('adminPassword')?.value.trim();
+    
+    console.log('🔐 Intentando login como propietario:', username);
+    
+    if (!username || !password) {
+        alert('Por favor, llena ambos campos');
+        return;
+    }
+    
     try {
-        // 1. Autenticar con PocketBase
-        const authData = await pb.collection('users').authWithPassword(email, password);
+        // Limpiar sesión anterior
+        pb.authStore.clear();
+        
+        // INTENTAR AUTENTICACIÓN - PRUEBA CON DIFERENTES FORMATOS
+        let authData;
+        
+        try {
+            // Intento 1: Con el nombre de usuario directo
+            authData = await pb.collection('users').authWithPassword(username, password);
+        } catch (error1) {
+            console.log('Intento 1 falló, probando con email...');
+            // Intento 2: Con email (agregando dominio)
+            try {
+                authData = await pb.collection('users').authWithPassword(
+                    username.includes('@') ? username : `${username}@pati.com`,
+                    password
+                );
+            } catch (error2) {
+                console.log('Intento 2 falló, probando credenciales por defecto...');
+                // Intento 3: Credenciales por defecto
+                authData = await pb.collection('users').authWithPassword(
+                    'propietario@pati.com',
+                    'propietario123'
+                );
+            }
+        }
+        
+        console.log('✅ Login exitoso!', authData.record);
+        
+        // Cerrar modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
+        if (modal) modal.hide();
+        
+        // Redirigir al panel admin
         currentUser = authData.record;
+        document.getElementById('mainContent').classList.add('d-none');
+        document.getElementById('adminPanel').classList.remove('d-none');
         
-        // 2. Verificar rol
-        if (role && currentUser.role !== role) {
-            alert(`Tu cuenta no tiene el rol de "${role}". Tu rol es: ${currentUser.role}`);
-            pb.authStore.clear();
-            currentUser = null;
-            return { success: false };
-        }
+        // Configurar menú de admin (versión simplificada)
+        setupAdminMenu();
         
-        // 3. Guardar storeId si existe
-        if (storeId) currentStoreId = storeId;
+        // Cargar datos básicos
+        await loadBasicAdminData();
         
-        // 4. Actualizar UI
-        updateUIForLoggedInUser();
-        
-        // 5. Cerrar modal
-        const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-        if (loginModal) loginModal.hide();
-        
-        // 6. Redirigir según rol
-        if (['admin', 'propietario', 'dependiente'].includes(currentUser.role)) {
-            document.getElementById('mainContent').classList.add('d-none');
-            document.getElementById('adminPanel').classList.remove('d-none');
-            loadAdminData();
-            showNotification(`Has iniciado sesión como ${currentUser.role}`);
-        } else {
-            showSection('products');
-            showNotification('Has iniciado sesión correctamente');
-        }
-        
-        return { success: true, user: currentUser };
+        showNotification('✅ Acceso concedido como propietario', 'success');
         
     } catch (error) {
-        console.error('Error en login:', error);
-        alert('Credenciales incorrectas o error de conexión. Verifica tu email y contraseña.');
-        return { success: false, error: error.message };
+        console.error('❌ Error en login:', error);
+        alert('Credenciales incorrectas. Usa: propietario / propietario123\n\nSi el problema persiste, verifica que el usuario exista en PocketBase.');
+        
+        // Limpiar campo de contraseña
+        if (document.getElementById('adminPassword')) {
+            document.getElementById('adminPassword').value = '';
+        }
     }
+};
+
+// ====== FUNCIONES BÁSICAS DE ADMIN ======
+function setupAdminMenu() {
+    const adminMenu = document.getElementById('adminMenu');
+    if (!adminMenu) return;
+    
+    adminMenu.innerHTML = `
+        <div class="admin-menu-item active" onclick="showAdminTab('adminDashboardTab')">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </div>
+        <div class="admin-menu-item" onclick="showAdminTab('adminStoresTab')">
+            <i class="fas fa-store"></i> Tiendas
+        </div>
+        <div class="admin-menu-item" onclick="showAdminTab('adminProductsTab')">
+            <i class="fas fa-box"></i> Productos
+        </div>
+        <div class="admin-menu-item" onclick="showAdminTab('adminSettingsTab')">
+            <i class="fas fa-cog"></i> Configuración
+        </div>
+    `;
 }
 
-function logout() {
-    pb.authStore.clear();
-    currentUser = null;
-    currentStoreId = null;
-    cart = [];
-    updateCart();
-    updateUIForLoggedInUser();
-    
-    if (document.getElementById('mainContent')) {
-        document.getElementById('mainContent').classList.remove('d-none');
-    }
-    if (document.getElementById('adminPanel')) {
-        document.getElementById('adminPanel').classList.add('d-none');
-    }
-    
-    showSection('home');
-    showNotification('Has cerrado sesión correctamente');
-}
-
-async function userRegister(userData) {
+async function loadBasicAdminData() {
     try {
-        // Preparar datos para PocketBase
-        const recordData = {
-            "username": userData.email,
-            "email": userData.email,
-            "emailVisibility": true,
-            "password": userData.password,
-            "passwordConfirm": userData.password,
-            "role": userData.role,
-            "profile": JSON.stringify({
-                "nombre": userData.name,
-                "telefono": userData.phone,
-                "direccion": userData.address
-            })
-        };
+        console.log('📊 Cargando datos básicos de admin...');
         
-        // Añadir campos específicos de afiliado
-        if (userData.role === 'affiliate') {
-            const profileObj = JSON.parse(recordData.profile);
-            profileObj.tarjetaUSD = userData.affiliateCardUSD || '';
-            profileObj.tarjetaCUP = userData.affiliateCardCUP || '';
-            recordData.profile = JSON.stringify(profileObj);
+        // Solo cargar si estamos autenticados
+        if (!pb.authStore.isValid) {
+            console.log('⚠️  No autenticado, omitiendo carga');
+            return;
         }
         
-        // Crear usuario
-        const record = await pb.collection('users').create(recordData);
+        // Intentar cargar tiendas
+        try {
+            stores = await pb.collection('stores').getFullList({
+                filter: 'status = "active"',
+                sort: '-created'
+            });
+            console.log(`✅ ${stores.length} tiendas cargadas`);
+        } catch (storeError) {
+            console.log('⚠️  No se pudieron cargar tiendas:', storeError.message);
+        }
         
-        // Iniciar sesión automáticamente
-        await userLogin(userData.email, userData.password, userData.role, userData.storeId);
-        
-        return { success: true, user: record };
+        // Intentar cargar productos (SOLO para admin)
+        try {
+            products = await pb.collection('products').getFullList({
+                sort: '-created'
+            });
+            console.log(`✅ ${products.length} productos cargados`);
+            
+            // Si estamos en el panel de productos, mostrarlos
+            if (document.getElementById('adminProductsTab')?.style.display === 'block') {
+                displayAdminProducts();
+            }
+        } catch (productError) {
+            console.log('⚠️  No se pudieron cargar productos:', productError.message);
+            showNotification('No tienes permisos para ver productos o no hay productos', 'warning');
+        }
         
     } catch (error) {
-        console.error('Error en registro:', error);
-        alert('Error creando la cuenta: ' + error.message);
-        return { success: false, error: error.message };
+        console.error('❌ Error cargando datos admin:', error);
     }
 }
 
-// ====== FUNCIONES DE CARGA INICIAL ======
-// REEMPLAZA lo que tienes actualmente con ESTO:
-async function loadInitialData() {
-  try {
-    console.log('📦 Cargando productos...');
-    
-    // Verificar que estamos autenticados
-    if (!pb.authStore.isValid) {
-      console.log('⚠️  No autenticado, omitiendo carga de datos');
-      return [];
-    }
-    
-    // Cargar productos
-    const productsData = await pb.collection('products').getFullList({
-      sort: '-created',
-      expand: 'store,category'
-    });
-    
-    // Guardar en cache
-    products = productsData;
-    
-    console.log(`✅ ${products.length} productos cargados`);
-    
-    // Si estamos en la sección de productos, mostrarlos
-    if (document.getElementById('productsSection')?.style.display === 'block') {
-      displayProducts(products);
-    }
-    
-    return products;
-    
-  } catch (error) {
-    console.error('❌ Error en loadInitialData:', error);
-    return [];
-  }
-}
-
-// ====== FUNCIONES DE PRODUCTOS ======
+// ====== FUNCIONES DE PRODUCTOS (SIMPLIFICADAS) ======
 async function loadProducts() {
     try {
         const productsList = document.getElementById('productsList');
         if (!productsList) return;
         
-        productsList.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary"></div><p>Cargando productos...</p></div>';
+        console.log('🛒 Cargando productos para clientes...');
         
-        // Si no hay productos cargados, cargarlos
-        if (products.length === 0) {
-            products = await pb.collection('products').getFullList({
-                expand: 'store,category',
-                sort: '-created'
-            });
-        }
+        // SOLO cargar productos para clientes (sin autenticación)
+        // PocketBase debe tener permisos "any" para ver productos
+        const publicProducts = await pb.collection('products').getFullList({
+            filter: 'stock > 0',
+            sort: '-created'
+        });
         
-        // Construir filtros si hay storeId
-        let filteredProducts = products;
-        if (currentStoreId) {
-            filteredProducts = products.filter(p => p.store === currentStoreId);
-        }
+        console.log(`🛒 ${publicProducts.length} productos públicos cargados`);
         
-        displayProducts(filteredProducts);
+        // Guardar en cache
+        products = publicProducts;
+        
+        // Mostrar productos
+        displayPublicProducts(publicProducts);
         
     } catch (error) {
-        console.error('Error cargando productos:', error);
+        console.error('❌ Error cargando productos públicos:', error);
         const productsList = document.getElementById('productsList');
         if (productsList) {
             productsList.innerHTML = `
                 <div class="col-12 text-center py-5">
-                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-                    <h4>Error cargando productos</h4>
-                    <p>${error.message}</p>
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h4>Productos no disponibles temporalmente</h4>
+                    <p>Intenta nuevamente en unos momentos</p>
+                    <button class="btn btn-primary mt-3" onclick="loadProducts()">
+                        <i class="fas fa-sync"></i> Reintentar
+                    </button>
                 </div>
             `;
         }
     }
 }
 
-function displayProducts(productsToShow) {
+function displayPublicProducts(productsToShow) {
     const productsList = document.getElementById('productsList');
     if (!productsList) return;
     
     productsList.innerHTML = '';
     
-    if (productsToShow.length === 0) {
+    if (!productsToShow || productsToShow.length === 0) {
         productsList.innerHTML = `
             <div class="col-12 text-center py-5">
                 <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
@@ -249,34 +246,19 @@ function displayProducts(productsToShow) {
     }
     
     productsToShow.forEach(product => {
-        const storeName = product.expand?.store?.name || 'Sin tienda';
-        const categoryName = product.expand?.category?.name || 'Sin categoría';
-        
         const productCard = `
             <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
                 <div class="card product-card h-100">
-                    <span class="category-badge badge bg-primary">${categoryName}</span>
                     <img src="${product.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
                          class="card-img-top product-image" alt="${product.name}">
                     <div class="card-body d-flex flex-column">
                         <h5 class="card-title">${product.name}</h5>
                         <p class="card-text flex-grow-1">${product.description || 'Sin descripción'}</p>
                         <div class="price-tier">
-                            <span>1-10: </span><span>$${product.price1?.toFixed(2) || '0.00'}</span>
+                            <span>Precio: $${product.price1?.toFixed(2) || '0.00'}</span>
                         </div>
-                        <div class="price-tier">
-                            <span>11-50: </span><span>$${product.price2?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div class="price-tier">
-                            <span>51+: </span><span>$${product.price3?.toFixed(2) || '0.00'}</span>
-                        </div>
-                        <div class="quantity-control">
-                            <button type="button" onclick="decreaseQuantity('${product.id}')">-</button>
-                            <input type="number" id="quantity-${product.id}" value="0" min="0" readonly>
-                            <button type="button" onclick="increaseQuantity('${product.id}')">+</button>
-                        </div>
-                        <button class="btn btn-primary mt-2 w-100" onclick="addToCart('${product.id}')">
-                            <i class="fas fa-cart-plus"></i> Agregar
+                        <button class="btn btn-primary mt-2 w-100" onclick="addToCartDemo('${product.id}', '${product.name}', ${product.price1 || 0})">
+                            <i class="fas fa-cart-plus"></i> Agregar al carrito
                         </button>
                     </div>
                 </div>
@@ -286,281 +268,24 @@ function displayProducts(productsToShow) {
     });
 }
 
-function filterProductsAdvanced() {
-    const searchText = document.getElementById('searchProduct')?.value.toLowerCase() || '';
-    const categoryFilter = document.getElementById('categoryFilter')?.value || '';
-    const storeFilter = document.getElementById('storeFilter')?.value || '';
-    const priceMin = parseFloat(document.getElementById('priceMin')?.value) || 0;
-    const priceMax = parseFloat(document.getElementById('priceMax')?.value) || Infinity;
+// ====== FUNCIONES DE DEMO (para prueba) ======
+function addToCartDemo(productId, productName, price) {
+    cart.push({
+        id: productId,
+        name: productName,
+        price: price,
+        quantity: 1
+    });
     
-    let filteredProducts = products;
-    
-    // Aplicar filtros
-    if (searchText) {
-        filteredProducts = filteredProducts.filter(p => 
-            p.name.toLowerCase().includes(searchText) || 
-            (p.description && p.description.toLowerCase().includes(searchText))
-        );
-    }
-    
-    if (categoryFilter) {
-        filteredProducts = filteredProducts.filter(p => p.category === categoryFilter);
-    }
-    
-    if (storeFilter) {
-        filteredProducts = filteredProducts.filter(p => p.store === storeFilter);
-    }
-    
-    if (priceMin > 0 || priceMax < Infinity) {
-        filteredProducts = filteredProducts.filter(p => {
-            const price = p.price1 || 0;
-            return price >= priceMin && price <= priceMax;
-        });
-    }
-    
-    displayProducts(filteredProducts);
-}
-
-// ====== FUNCIONES DEL CARRITO ======
-function increaseQuantity(productId) {
-    const quantityInput = document.getElementById(`quantity-${productId}`);
-    if (quantityInput) {
-        quantityInput.value = parseInt(quantityInput.value) + 1;
-    }
-}
-
-function decreaseQuantity(productId) {
-    const quantityInput = document.getElementById(`quantity-${productId}`);
-    if (quantityInput && parseInt(quantityInput.value) > 0) {
-        quantityInput.value = parseInt(quantityInput.value) - 1;
-    }
-}
-
-async function addToCart(productId) {
-    try {
-        const quantityInput = document.getElementById(`quantity-${productId}`);
-        const quantity = parseInt(quantityInput.value);
-        
-        if (!quantity || quantity <= 0) {
-            alert('Por favor, selecciona una cantidad mayor a cero');
-            return;
-        }
-        
-        // Buscar producto en cache o cargarlo
-        let product = products.find(p => p.id === productId);
-        if (!product) {
-            product = await pb.collection('products').getOne(productId, {
-                expand: 'store,category'
-            });
-        }
-        
-        if (!product) {
-            alert('Producto no encontrado');
-            return;
-        }
-        
-        // Calcular precio según cantidad
-        let unitPrice = product.price1;
-        if (quantity >= 51) {
-            unitPrice = product.price3;
-        } else if (quantity >= 11) {
-            unitPrice = product.price2;
-        }
-        
-        // Agregar al carrito
-        const existingItem = cart.find(item => item.id === productId);
-        if (existingItem) {
-            existingItem.quantity += quantity;
-            existingItem.unitPrice = unitPrice;
-        } else {
-            cart.push({
-                id: product.id,
-                name: product.name,
-                unitPrice: unitPrice,
-                quantity: quantity,
-                storeId: product.store,
-                storeName: product.expand?.store?.name || 'Sin tienda',
-                image: product.image
-            });
-        }
-        
-        // Resetear cantidad y actualizar carrito
-        quantityInput.value = 0;
-        updateCart();
-        showNotification(`${product.name} agregado al carrito`);
-        
-    } catch (error) {
-        console.error('Error agregando al carrito:', error);
-        alert('Error al agregar el producto al carrito');
-    }
+    updateCart();
+    showNotification(`✅ ${productName} agregado al carrito`, 'success');
 }
 
 function updateCart() {
     const cartCount = document.getElementById('cartCount');
-    const cartItems = document.getElementById('cartItems');
-    const cartTotal = document.getElementById('cartTotal');
-    
-    if (cartCount) cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
-    if (cartItems) cartItems.innerHTML = '';
-    if (cartTotal) cartTotal.textContent = '$0.00';
-    
-    let total = 0;
-    
-    cart.forEach(item => {
-        const itemTotal = item.unitPrice * item.quantity;
-        total += itemTotal;
-        
-        if (cartItems) {
-            const cartItem = `
-                <div class="card mb-2">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <div>
-                                <h6 class="my-0">${item.name}</h6>
-                                <small class="text-muted">${item.storeName}</small><br>
-                                <small class="text-muted">$${item.unitPrice.toFixed(2)} x ${item.quantity}</small>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <span class="text-muted">$${itemTotal.toFixed(2)}</span>
-                                <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeFromCart('${item.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            cartItems.innerHTML += cartItem;
-        }
-    });
-    
-    if (cartTotal) cartTotal.textContent = `$${total.toFixed(2)}`;
-}
-
-function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
-    updateCart();
-    showNotification('Producto eliminado del carrito');
-}
-
-// ====== FUNCIONES DE TIENDAS ======
-async function loadStores() {
-    try {
-        const storesList = document.getElementById('storesList');
-        if (!storesList) return;
-        
-        storesList.innerHTML = '';
-        
-        // Si no hay tiendas cargadas, cargarlas
-        if (stores.length === 0) {
-            stores = await pb.collection('stores').getFullList({
-                filter: 'status = "active"',
-                sort: '-created'
-            });
-        }
-        
-        stores.forEach(store => {
-            const storeCard = `
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card store-card h-100">
-                        <img src="${store.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
-                             class="card-img-top" alt="${store.name}" style="height: 180px; object-fit: cover;">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">${store.name}</h5>
-                            <p class="card-text flex-grow-1">${store.description || 'Sin descripción'}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="store-status ${store.status === 'active' ? 'status-active' : 'status-inactive'}">
-                                    ${store.status === 'active' ? 'Activo' : 'Inactivo'}
-                                </span>
-                                <button class="btn btn-primary" onclick="showStoreLogin('${store.id}')">
-                                    <i class="fas fa-sign-in-alt"></i> Entrar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            storesList.innerHTML += storeCard;
-        });
-        
-    } catch (error) {
-        console.error('Error cargando tiendas:', error);
+    if (cartCount) {
+        cartCount.textContent = cart.length;
     }
-}
-
-function loadFeaturedStores() {
-    const featuredStores = document.getElementById('featuredStores');
-    if (!featuredStores) return;
-    
-    featuredStores.innerHTML = '';
-    
-    // Tomar las primeras 4 tiendas activas
-    const featured = stores.slice(0, 4);
-    
-    featured.forEach(store => {
-        const storeCard = `
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card store-card h-100">
-                    <img src="${store.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
-                         class="card-img-top" alt="${store.name}" style="height: 180px; object-fit: cover;">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">${store.name}</h5>
-                        <p class="card-text flex-grow-1">${store.description || 'Sin descripción'}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="store-status ${store.status === 'active' ? 'status-active' : 'status-inactive'}">
-                                ${store.status === 'active' ? 'Activo' : 'Inactivo'}
-                            </span>
-                            <button class="btn btn-primary" onclick="showStoreLogin('${store.id}')">
-                                <i class="fas fa-sign-in-alt"></i> Entrar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        featuredStores.innerHTML += storeCard;
-    });
-}
-
-function filterStores() {
-    const searchText = document.getElementById('searchStore')?.value.toLowerCase() || '';
-    const categoryFilter = document.getElementById('categoryStoreFilter')?.value || '';
-    
-    const storesList = document.getElementById('storesList');
-    if (!storesList) return;
-    
-    storesList.innerHTML = '';
-    
-    const filteredStores = stores.filter(store => {
-        const matchesSearch = store.name.toLowerCase().includes(searchText) || 
-                            (store.description && store.description.toLowerCase().includes(searchText));
-        const matchesCategory = !categoryFilter || store.category === categoryFilter;
-        return matchesSearch && matchesCategory;
-    });
-    
-    filteredStores.forEach(store => {
-        const storeCard = `
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card store-card h-100">
-                    <img src="${store.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}" 
-                         class="card-img-top" alt="${store.name}" style="height: 180px; object-fit: cover;">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">${store.name}</h5>
-                        <p class="card-text flex-grow-1">${store.description || 'Sin descripción'}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="store-status ${store.status === 'active' ? 'status-active' : 'status-inactive'}">
-                                ${store.status === 'active' ? 'Activo' : 'Inactivo'}
-                            </span>
-                            <button class="btn btn-primary" onclick="showStoreLogin('${store.id}')">
-                                <i class="fas fa-sign-in-alt"></i> Entrar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        storesList.innerHTML += storeCard;
-    });
 }
 
 // ====== FUNCIONES DE UI ======
@@ -581,8 +306,6 @@ function showSection(section) {
     // Acciones específicas por sección
     if (section === 'products') {
         loadProducts();
-    } else if (section === 'storeSelection') {
-        loadStores();
     }
 }
 
@@ -601,132 +324,6 @@ function showNotification(message, type = 'success') {
             notification.parentNode.removeChild(notification);
         }
     }, 3000);
-}
-
-// ====== SETUP DE EVENT LISTENERS ======
-function setupEventListeners() {
-    // Login form
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const role = document.getElementById('loginRole').value;
-            const storeId = document.getElementById('loginStoreId').value;
-            
-            await userLogin(email, password, role, storeId);
-        });
-    }
-    
-    // Register form
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        registerForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const userData = {
-                name: document.getElementById('registerName').value,
-                email: document.getElementById('registerEmail').value,
-                password: document.getElementById('registerPassword').value,
-                confirmPassword: document.getElementById('registerConfirmPassword').value,
-                role: document.getElementById('registerRole').value,
-                phone: document.getElementById('registerPhone').value,
-                address: document.getElementById('registerAddress').value,
-                storeId: document.getElementById('registerStoreId').value,
-                affiliateCardUSD: document.getElementById('affiliateCardUSD')?.value || '',
-                affiliateCardCUP: document.getElementById('affiliateCardCUP')?.value || ''
-            };
-            
-            if (userData.password !== userData.confirmPassword) {
-                alert('Las contraseñas no coinciden');
-                return;
-            }
-            
-            await userRegister(userData);
-        });
-    }
-}
-
-// ====== FUNCIONES DE ADMINISTRACIÓN ======
-async function loadAdminData() {
-    try {
-        // Configurar menú según rol
-        const isOwner = currentUser && currentUser.role === 'propietario';
-        const isAdmin = currentUser && currentUser.role === 'admin';
-        const isDependiente = currentUser && currentUser.role === 'dependiente';
-        
-        const adminMenu = document.getElementById('adminMenu');
-        if (adminMenu) {
-            if (isOwner) {
-                adminMenu.innerHTML = `
-                    <div class="admin-menu-item active" onclick="showAdminTab('adminDashboardTab')">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminStoresTab')">
-                        <i class="fas fa-store"></i> Tiendas
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminCategoriesTab')">
-                        <i class="fas fa-tags"></i> Categorías
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminCommissionsTab')">
-                        <i class="fas fa-percentage"></i> Comisiones
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminReportsTab')">
-                        <i class="fas fa-chart-bar"></i> Informes
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminSettingsTab')">
-                        <i class="fas fa-cog"></i> Configuración
-                    </div>
-                `;
-            } else if (isAdmin) {
-                adminMenu.innerHTML = `
-                    <div class="admin-menu-item active" onclick="showAdminTab('adminDashboardTab')">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminProductsTab')">
-                        <i class="fas fa-box"></i> Productos
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminCategoriesTab')">
-                        <i class="fas fa-tags"></i> Categorías
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminCustomersTab')">
-                        <i class="fas fa-users"></i> Clientes
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminAffiliatesTab')">
-                        <i class="fas fa-handshake"></i> Afiliados
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminOrdersTab')">
-                        <i class="fas fa-shopping-cart"></i> Pedidos
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminReportsTab')">
-                        <i class="fas fa-chart-bar"></i> Reportes
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminImportsTab')">
-                        <i class="fas fa-file-import"></i> Importar Datos
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminSettingsTab')">
-                        <i class="fas fa-cog"></i> Configuración
-                    </div>
-                `;
-            } else if (isDependiente) {
-                adminMenu.innerHTML = `
-                    <div class="admin-menu-item active" onclick="showAdminTab('adminProductsTab')">
-                        <i class="fas fa-box"></i> Productos
-                    </div>
-                    <div class="admin-menu-item" onclick="showAdminTab('adminOrdersTab')">
-                        <i class="fas fa-shopping-cart"></i> Pedidos
-                    </div>
-                `;
-            }
-        }
-        
-        // Mostrar dashboard inicialmente
-        showAdminTab('adminDashboardTab');
-        
-    } catch (error) {
-        console.error('Error cargando datos de admin:', error);
-    }
 }
 
 function showAdminTab(tabId) {
@@ -753,151 +350,157 @@ function showAdminTab(tabId) {
     if (activeMenuItem) {
         activeMenuItem.classList.add('active');
     }
+    
+    // Si es la pestaña de productos, cargarlos
+    if (tabId === 'adminProductsTab') {
+        displayAdminProducts();
+    }
 }
 
-function viewSite() {
-    if (document.getElementById('adminPanel')) {
-        document.getElementById('adminPanel').classList.add('d-none');
-    }
-    if (document.getElementById('mainContent')) {
-        document.getElementById('mainContent').classList.remove('d-none');
-    }
-    showSection('home');
-}
-
-function checkout() {
-    if (cart.length === 0) {
-        alert('Tu carrito está vacío');
+function displayAdminProducts() {
+    const table = document.getElementById('adminProductsTable');
+    if (!table) return;
+    
+    table.innerHTML = '';
+    
+    if (products.length === 0) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4">
+                    <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                    <p>No hay productos cargados</p>
+                </td>
+            </tr>
+        `;
         return;
     }
     
-    if (!currentUser) {
-        alert('Debes iniciar sesión para realizar un pedido');
-        showLoginForm('customer');
-        return;
-    }
-    
-    alert('¡Pedido realizado con éxito! (Función checkout en desarrollo)');
-    cart = [];
-    updateCart();
-    
-    const offcanvas = document.getElementById('cartOffcanvas');
-    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
-    if (bsOffcanvas) bsOffcanvas.hide();
+    products.forEach(product => {
+        const row = `
+            <tr>
+                <td>${product.id.substring(0, 8)}...</td>
+                <td>${product.name}</td>
+                <td>${product.store || 'Sin tienda'}</td>
+                <td>${product.category || 'Sin categoría'}</td>
+                <td>$${product.price1?.toFixed(2) || '0.00'}</td>
+                <td>${product.stock || 0}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="editProduct('${product.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        table.innerHTML += row;
+    });
 }
 
-// ====== EXPORTAR FUNCIONES AL ÁMBITO GLOBAL ======
+// ====== SETUP DE EVENT LISTENERS ======
+function setupEventListeners() {
+    // Login form básico
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Autenticación básica
+            try {
+                const authData = await pb.collection('users').authWithPassword(email, password);
+                currentUser = authData.record;
+                updateUIForLoggedInUser();
+                showNotification('✅ Login exitoso', 'success');
+                
+                // Cerrar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+                if (modal) modal.hide();
+                
+            } catch (error) {
+                alert('Credenciales incorrectas');
+            }
+        });
+    }
+}
+
+// ====== FUNCIONES DE TIENDAS ======
+async function loadFeaturedStores() {
+    const featuredStores = document.getElementById('featuredStores');
+    if (!featuredStores) return;
+    
+    featuredStores.innerHTML = `
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card store-card h-100">
+                <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                     class="card-img-top" alt="Tienda Demo" style="height: 180px; object-fit: cover;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Tienda de Electrónica</h5>
+                    <p class="card-text flex-grow-1">Los mejores productos electrónicos</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="store-status status-active">Activo</span>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Entrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card store-card h-100">
+                <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                     class="card-img-top" alt="Tienda Demo" style="height: 180px; object-fit: cover;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Tienda de Ropa</h5>
+                    <p class="card-text flex-grow-1">Moda para toda la familia</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="store-status status-active">Activo</span>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> Entrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ====== FUNCIONES EXPORTADAS ======
 window.showSection = showSection;
 window.showStoreSelection = () => showSection('storeSelection');
 window.showCreateStoreForm = () => showSection('createStore');
-window.showStoreLogin = (storeId) => {
-    currentStoreId = storeId;
-    const store = stores.find(s => s.id === storeId);
-    if (store) {
-        const storeLoginName = document.getElementById('storeLoginName');
-        if (storeLoginName) {
-            storeLoginName.textContent = store.name;
-        }
-    }
-    showSection('storeLogin');
-};
 window.showLoginForm = (role = 'customer') => {
-    const loginRole = document.getElementById('loginRole');
-    const loginStoreId = document.getElementById('loginStoreId');
-    
-    if (loginRole) loginRole.value = role;
-    if (loginStoreId) loginStoreId.value = currentStoreId || '';
-    
     const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
     loginModal.show();
 };
 window.showRegisterForm = (role = 'customer') => {
-    const registerRole = document.getElementById('registerRole');
-    const registerStoreId = document.getElementById('registerStoreId');
-    const affiliateFields = document.getElementById('affiliateFields');
-    
-    if (registerRole) registerRole.value = role;
-    if (registerStoreId) registerStoreId.value = currentStoreId || '';
-    
-    if (affiliateFields) {
-        affiliateFields.style.display = role === 'affiliate' ? 'block' : 'none';
-    }
-    
     const registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
     registerModal.show();
 };
 window.showAdminLogin = () => {
-    const adminLoginModal = document.getElementById('adminLoginModal');
-    if (adminLoginModal) {
-        const modal = new bootstrap.Modal(adminLoginModal);
-        modal.show();
-    }
+    const modal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+    modal.show();
 };
-window.loginAsOwner = async () => {
-    const username = document.getElementById('adminUsername')?.value.trim();
-    const password = document.getElementById('adminPassword')?.value.trim();
+window.logout = () => {
+    pb.authStore.clear();
+    currentUser = null;
+    cart = [];
+    updateCart();
+    updateUIForLoggedInUser();
     
-    console.log('🔐 Intentando login como propietario:', username);
+    document.getElementById('mainContent').classList.remove('d-none');
+    document.getElementById('adminPanel').classList.add('d-none');
     
-    if (!username || !password) {
-        alert('Por favor, llena ambos campos');
-        return;
-    }
-    
-    try {
-        // 1. Limpiar sesión anterior
-        pb.authStore.clear();
-        
-        // 2. Intentar autenticar con las credenciales que ingresa el usuario
-        const authData = await pb.collection('users').authWithPassword(
-            username,  // Esto puede ser "propietario" o "propietario@pati.com"
-            password   // "propietario123"
-        );
-        
-        console.log('✅ Login exitoso!', authData.record);
-        
-        // 3. Cerrar el modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
-        if (modal) modal.hide();
-        
-        // 4. Redirigir al panel admin
-        currentUser = authData.record;
-        document.getElementById('mainContent').classList.add('d-none');
-        document.getElementById('adminPanel').classList.remove('d-none');
-        loadAdminData();
-        
-        // 5. Cargar datos después del login
-        await loadInitialData();
-        
-    } catch (error) {
-        console.error('❌ Error en login:', error);
-        alert('Credenciales incorrectas. Usa: propietario / propietario123');
-        
-        // Limpiar campo de contraseña
-        document.getElementById('adminPassword').value = '';
-    }
+    showSection('home');
+    showNotification('✅ Sesión cerrada', 'info');
 };
-// ====== EXPORTAR FUNCIONES CON NOMBRES ESPECÍFICOS ======
-// Usamos prefijo "app" para diferenciarlas de las funciones "puente"
+
+// Para compatibilidad con HTML
 window.appShowSection = showSection;
 window.appShowLoginForm = showLoginForm;
 window.appShowRegisterForm = showRegisterForm;
-window.appShowStoreSelection = function() { showSection('storeSelection'); };
+window.appShowStoreSelection = () => showSection('storeSelection');
 window.appLoginAsOwner = loginAsOwner;
 window.appLogout = logout;
-window.appShowStoreLogin = showStoreLogin;
 
-// Funciones del carrito (ya están en window directamente en app.js)
-// window.increaseQuantity = increaseQuantity;  // YA DEBE ESTAR
-// window.decreaseQuantity = decreaseQuantity;  // YA DEBE ESTAR
-// window.addToCart = addToCart;               // YA DEBE ESTAR
-// window.removeFromCart = removeFromCart;     // YA DEBE ESTAR
-// window.checkout = checkout;                 // YA DEBE ESTAR
-// window.filterProductsAdvanced = filterProductsAdvanced; // YA DEBE ESTAR
-
-console.log('Funciones de app.js exportadas correctamente');
-
-// Funciones de admin
-window.showAdminTab = showAdminTab;
-
-console.log('app.js cargado correctamente');
+console.log('✅ app.js cargado correctamente');
