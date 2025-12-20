@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const express = require('express');
 const PocketBase = require('pocketbase');
 const app = express();
@@ -21,4 +22,11 @@ app.use('/api/affiliates', affiliatesRoutes);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
+=======
+// backend/server.js
+app.post('/api/import', async (req, res) => {
+  const data = req.body;
+  // Lógica para importar datos a Pocketbase
+  res.status(200).send('Datos importados con éxito');
+>>>>>>> origin/main
 });
