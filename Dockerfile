@@ -1,18 +1,22 @@
-# Use an official Node runtime as a parent image
-FROM node:14
+FROM alpine:3.18
 
-# Set the working directory in the container
-WORKDIR /app
+RUN apk update && apk add --no-cache \
+    wget \
+    unzip \
+    ca-certificates \
+    curl
 
-# Copy package.json and package-lock (if you have one) into the container
-COPY package*.json ./
-RUN npm install
+# DESCARGAR LA MISMA VERSIÓN QUE USAS LOCALMENTE
+RUN wget -q https://github.com/pocketbase/pocketbase/releases/download/v0.30.0/pocketbase_0.30.0_linux_amd64.zip \
+    && unzip -q pocketbase_0.30.0_linux_amd64.zip \
+    && chmod +x pocketbase \
+    && rm pocketbase_0.30.0_linux_amd64.zip
 
-# Bundle app's source code into the container
-COPY . .
+RUN mkdir -p /pb_data
 
-# Expose the container to port 8080
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
 EXPOSE 8080
 
-# Run the app using node command
-CMD ["node", "app.js"]
+CMD ["/start.sh"]
