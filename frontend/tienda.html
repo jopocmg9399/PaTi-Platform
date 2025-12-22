@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda - PaTí</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PocketBase SDK -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos de la tienda */
+        .store-hero {
+            background: linear-gradient(rgba(139, 69, 19, 0.8), rgba(139, 69, 19, 0.9)), 
+                        var(--store-banner, url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'));
+            background-size: cover;
+            background-position: center;
+            min-height: 400px;
+        }
+        
+        .product-card {
+            border: 2px solid #F5DEB3;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(139, 69, 19, 0.1);
+        }
+        
+        .currency-badge {
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #8B4513;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background: white;
+            transform: translateX(-5px);
+        }
+        
+        .cart-icon-badge {
+            font-size: 10px;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Botón Regresar -->
+    <a href="index.html" class="back-button">
+        <i class="fas fa-arrow-left mr-2"></i> Regresar a PaTí
+    </a>
+
+    <!-- Header de Tienda -->
+    <header id="store-header" class="store-hero text-white flex items-center justify-center relative">
+        <div class="text-center p-8">
+            <!-- Logo PaTí detrás del nombre -->
+            <div class="relative inline-block mb-6">
+                <img src="images/logo.png" alt="PaTí Logo" class="absolute -z-10 h-32 w-32 opacity-20 -top-10 -left-10">
+                <h1 id="store-name" class="text-5xl md:text-6xl font-bold mb-4">Nombre Tienda</h1>
+            </div>
+            <p id="store-tagline" class="text-xl mb-8">Tu tienda en línea</p>
+            
+            <!-- Llamado a la acción -->
+            <button onclick="scrollToProducts()" class="bg-white text-[#8B4513] px-8 py-4 rounded-full text-xl font-bold hover:bg-gray-100 transition transform hover:scale-105">
+                <i class="fas fa-shopping-cart mr-3"></i> Comprar Ahora
+            </button>
+        </div>
+    </header>
+
+    <!-- Menú de Navegación -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center space-x-8 py-4">
+                <a href="#inicio" class="text-[#8B4513] font-bold border-b-2 border-[#8B4513] pb-1">Inicio</a>
+                <a href="#nosotros" class="text-gray-700 hover:text-[#8B4513] transition">Nosotros</a>
+                <a href="#contactos" class="text-gray-700 hover:text-[#8B4513] transition">Contactos</a>
+                <a href="#administrador" class="text-gray-700 hover:text-[#8B4513] transition">Administrador</a>
+                
+                <!-- Buscador en tienda -->
+                <div class="relative">
+                    <input type="text" placeholder="Buscar productos..." 
+                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:border-[#8B4513]">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                
+                <!-- Icono del Carrito -->
+                <div class="relative">
+                    <button class="cart-icon text-[#8B4513] hover:text-[#654321] text-xl">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-icon-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="display: none;">
+                            0
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main>
+        <!-- Sección Inicio -->
+        <section id="inicio" class="container mx-auto px-4 py-12">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-12">
+                <h2 class="text-3xl font-bold text-[#8B4513] mb-6">Bienvenido a nuestra tienda</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <p id="store-description" class="text-gray-700 text-lg mb-6">
+                            Descripción de la tienda cargada desde backend...
+                        </p>
+                        <div class="flex space-x-4">
+                            <button onclick="scrollToProducts()" class="bg-[#8B4513] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#654321] transition">
+                                Ver Productos
+                            </button>
+                            <button onclick="scrollToContact()" class="border-2 border-[#8B4513] text-[#8B4513] px-6 py-3 rounded-lg font-bold hover:bg-[#8B4513] hover:text-white transition">
+                                Contactar
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <img id="store-featured-image" 
+                             src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Imagen representativa" 
+                             class="rounded-xl shadow-lg w-full h-64 object-cover">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Productos Más Vendidos -->
+            <h2 class="text-3xl font-bold text-[#8B4513] mb-8 text-center">Productos Más Vendidos</h2>
+            <div id="featured-products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <!-- Productos se cargarán dinámicamente -->
+                <div class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-[#8B4513] text-2xl mb-2"></i>
+                    <p class="text-gray-600">Cargando productos...</p>
+                </div>
+            </div>
+
+            <!-- Todos los Productos -->
+            <div id="all-products-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Todos los Productos</h3>
+                    <div class="flex space-x-4">
+                        <select id="category-filter" class="p-2 border rounded-lg">
+                            <option value="">Todas las categorías</option>
+                        </select>
+                        <select id="sort-filter" class="p-2 border rounded-lg">
+                            <option value="newest">Más recientes</option>
+                            <option value="price-low">Precio: Menor a Mayor</option>
+                            <option value="price-high">Precio: Mayor a Menor</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Productos se cargarán aquí -->
+                </div>
+                <div id="loading-more" class="text-center py-8 hidden">
+                    <i class="fas fa-spinner fa-spin text-[#8B4513] text-xl mr-2"></i>
+                    <span>Cargando más productos...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Nosotros -->
+        <section id="nosotros" class="bg-[#F5DEB3] py-16">
+            <div class="container mx-auto px-4">
+                <h2 class="text-3xl font-bold text-[#654321] mb-8 text-center">Sobre Nosotros</h2>
+                <div id="about-content" class="bg-white rounded-2xl p-8 shadow-lg">
+                    <!-- Contenido cargado desde store_pages -->
+                    <p class="text-center text-gray-600">Contenido de "Nosotros" cargará desde configuración de la tienda.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección Contactos -->
+        <section id="contactos" class="container mx-auto px-4 py-16">
+            <h2 class="text-3xl font-bold text-[#8B4513] mb-8 text-center">Contactos</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Información de Contacto -->
+                <div>
+                    <div class="bg-white rounded-2xl p-8 shadow-lg mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">Información de Contacto</h3>
+                        <div id="contact-info" class="space-y-4">
+                            <!-- Información cargada desde store_settings -->
+                            <div class="flex items-center">
+                                <i class="fas fa-envelope text-[#8B4513] text-xl mr-4"></i>
+                                <span id="store-email" class="text-gray-700">contacto@tienda.com</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-phone text-[#8B4513] text-xl mr-4"></i>
+                                <span id="store-phone" class="text-gray-700">+53 12345678</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt text-[#8B4513] text-xl mr-4"></i>
+                                <span id="store-address" class="text-gray-700">Dirección de la tienda</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Horario de Atención -->
+                    <div class="bg-white rounded-2xl p-8 shadow-lg">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6">Horario de Atención</h3>
+                        <div id="business-hours">
+                            <!-- Horarios cargados desde store_settings -->
+                            <p class="text-gray-700">Lunes a Viernes: 9:00 AM - 6:00 PM</p>
+                            <p class="text-gray-700">Sábados: 10:00 AM - 2:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Formulario de Contacto -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Envíanos un Mensaje</h3>
+                    <form id="contact-form">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2">Nombre</label>
+                            <input type="text" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2">Email</label>
+                            <input type="email" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2">Mensaje</label>
+                            <textarea rows="5" required class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-[#8B4513] text-white py-3 rounded-lg font-bold hover:bg-[#654321] transition">
+                            Enviar Mensaje
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#654321] text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-3">
+                        <img src="images/logo.png" alt="PaTí Logo" class="h-10 w-10">
+                        <span class="text-xl font-bold">PaTí</span>
+                    </div>
+                    <p class="mt-2 text-sm">Plataforma de Tiendas Online</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p>&copy; 2024 Todos los derechos reservados</p>
+                    <p class="mt-1 text-sm">Esta tienda opera en la plataforma PaTí</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/store.js"></script>
+</body>
+</html>

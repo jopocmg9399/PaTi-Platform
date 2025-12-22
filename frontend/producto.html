@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Producto - PaTí</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PocketBase SDK -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Swiper para galería de imágenes -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <style>
+        .product-gallery {
+            height: 500px;
+        }
+        
+        .swiper-slide {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .swiper-slide img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+        
+        .currency-selector {
+            border: 2px solid #F5DEB3;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .currency-option {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .currency-option.active {
+            background: #8B4513;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .currency-option:not(.active):hover {
+            background: #F5DEB3;
+        }
+        
+        .quantity-selector {
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .quantity-btn {
+            padding: 12px 20px;
+            background: #F5DEB3;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #8B4513;
+        }
+        
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .specs-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        .specs-table tr {
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .specs-table td {
+            padding: 12px 0;
+        }
+        
+        .specs-table td:first-child {
+            font-weight: bold;
+            color: #8B4513;
+            width: 30%;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #8B4513;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background: white;
+            transform: translateX(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .cart-icon-badge {
+            font-size: 10px;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Botón Regresar a Tienda -->
+    <a href="#" id="back-to-store" class="back-button">
+        <i class="fas fa-arrow-left mr-2"></i> Volver a la Tienda
+    </a>
+
+    <!-- Header con info de tienda -->
+    <header id="store-mini-header" class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <img id="store-logo-mini" src="images/logo.png" alt="Logo Tienda" class="h-8 w-8 rounded-full">
+                    <div>
+                        <span class="text-sm text-gray-600">Producto de</span>
+                        <h2 id="store-name-mini" class="font-bold text-[#8B4513]">Nombre Tienda</h2>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Icono del Carrito -->
+                    <div class="relative">
+                        <button class="cart-icon text-[#8B4513] hover:text-[#654321] text-xl">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-icon-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="display: none;">
+                                0
+                            </span>
+                        </button>
+                    </div>
+                    
+                    <a href="index.html" class="text-[#8B4513] hover:underline">
+                        <i class="fas fa-home mr-1"></i> PaTí
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+            <!-- Galería de Imágenes -->
+            <div>
+                <div class="swiper product-gallery mb-4 rounded-2xl overflow-hidden shadow-lg">
+                    <div class="swiper-wrapper" id="product-images">
+                        <!-- Imágenes se cargarán aquí -->
+                    </div>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-button-next"></div>
+                    <div class="swiper-button-prev"></div>
+                </div>
+                
+                <!-- Miniaturas -->
+                <div class="swiper thumbnails">
+                    <div class="swiper-wrapper" id="product-thumbnails">
+                        <!-- Miniaturas se cargarán aquí -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Producto -->
+            <div>
+                <!-- Categorías y etiquetas -->
+                <div class="mb-4">
+                    <div id="product-categories" class="flex flex-wrap gap-2 mb-2">
+                        <!-- Categorías se cargarán aquí -->
+                    </div>
+                    <span id="product-stock" class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                        <i class="fas fa-check-circle mr-1"></i> En stock
+                    </span>
+                </div>
+                
+                <!-- Nombre y descripción -->
+                <h1 id="product-name" class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Nombre del Producto</h1>
+                <p id="product-description" class="text-gray-700 text-lg mb-6">
+                    Descripción del producto cargando...
+                </p>
+                
+                <!-- Precios y Moneda -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <span class="text-2xl md:text-3xl font-bold text-[#8B4513]" id="product-price">$0.00</span>
+                            <span class="text-gray-500 ml-2" id="product-currency">USD</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-600">Comisión para afiliados</div>
+                            <div class="font-bold text-[#8B4513]" id="affiliate-commission">10%</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Selector de Moneda (si aplica) -->
+                    <div id="currency-selector-container" class="mb-6">
+                        <div class="text-sm text-gray-600 mb-2">Seleccionar moneda:</div>
+                        <div class="currency-selector flex max-w-xs">
+                            <div class="currency-option active flex-1" data-currency="USD">
+                                USD ($)
+                            </div>
+                            <div class="currency-option flex-1" data-currency="CUP">
+                                CUP ($MN)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cantidad y Añadir al Carrito -->
+                <div class="mb-8">
+                    <div class="text-sm text-gray-600 mb-2">Cantidad:</div>
+                    <div class="flex items-center space-x-6">
+                        <div class="quantity-selector flex items-center">
+                            <button class="quantity-btn" id="decrease-qty">-</button>
+                            <input type="number" id="product-quantity" class="quantity-input" value="1" min="1" max="100">
+                            <button class="quantity-btn" id="increase-qty">+</button>
+                        </div>
+                        
+                        <button id="add-to-cart-btn" 
+                                class="flex-1 bg-[#8B4513] text-white py-4 rounded-lg font-bold text-lg hover:bg-[#654321] transition transform hover:scale-105">
+                            <i class="fas fa-cart-plus mr-3"></i> Añadir al Carrito
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Información adicional -->
+                <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <i class="fas fa-shipping-fast text-[#8B4513] text-2xl mb-2"></i>
+                            <div class="font-bold">Envío Gratis</div>
+                            <div class="text-sm text-gray-600">En pedidos > $50</div>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-undo-alt text-[#8B4513] text-2xl mb-2"></i>
+                            <div class="font-bold">Devoluciones</div>
+                            <div class="text-sm text-gray-600">30 días garantía</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="flex space-x-4">
+                    <button id="buy-now-btn" 
+                            class="flex-1 bg-gradient-to-r from-[#8B4513] to-[#A0522D] text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
+                        <i class="fas fa-bolt mr-2"></i> Comprar Ahora
+                    </button>
+                    <button id="share-btn" 
+                            class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button id="wishlist-btn" 
+                            class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        <i class="far fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Especificaciones y Detalles -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <!-- Especificaciones -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-[#8B4513] mb-6">Especificaciones</h3>
+                    <table class="specs-table" id="product-specs">
+                        <!-- Especificaciones se cargarán aquí -->
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Información del Vendedor -->
+            <div>
+                <div class="bg-white rounded-2xl shadow-lg p-8 sticky top-8">
+                    <h3 class="text-2xl font-bold text-[#8B4513] mb-6">Información del Vendedor</h3>
+                    <div class="flex items-center space-x-4 mb-6">
+                        <img id="store-logo" src="images/logo.png" alt="Logo Tienda" class="h-16 w-16 rounded-full border-2 border-[#F5DEB3]">
+                        <div>
+                            <h4 id="store-name-full" class="font-bold text-lg">Nombre Tienda</h4>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-star text-yellow-500 mr-1"></i>
+                                <span>4.8 (128 reviews)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                            <span class="text-sm">Vendedor verificado en PaTí</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-shipping-fast text-[#8B4513] mr-3"></i>
+                            <span class="text-sm">Envíos a todo el país</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-clock text-[#8B4513] mr-3"></i>
+                            <span class="text-sm">Respuesta en 24h</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="viewStore()" 
+                            class="w-full border-2 border-[#8B4513] text-[#8B4513] py-3 rounded-lg font-bold hover:bg-[#8B4513] hover:text-white transition">
+                        <i class="fas fa-store mr-2"></i> Ver Tienda
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productos Relacionados -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold text-[#8B4513] mb-6">Productos Relacionados</h3>
+            <div id="related-products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Productos relacionados se cargarán aquí -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#654321] text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <img src="images/logo.png" alt="PaTí Logo" class="h-10 w-10">
+                <span class="text-xl font-bold">PaTí</span>
+            </div>
+            <p>Plataforma de Tiendas Online</p>
+            <p class="mt-2 text-sm text-gray-300">Este producto se vende a través de la plataforma PaTí</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/product.js"></script>
+</body>
+</html>

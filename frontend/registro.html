@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - PaTí</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="images/logo.png" alt="PaTí Logo" height="40">
+                <span>PaTí</span>
+            </a>
+            <nav class="nav">
+                <a href="index.html">Inicio</a>
+                <a href="index.html#tiendas">Tiendas</a>
+                <a href="index.html#como-funciona">¿Cómo funciona?</a>
+                <a href="login.html">Iniciar Sesión</a>
+                <a href="registro.html" class="btn btn-outline active">Registrarse</a>
+            </nav>
+            <button class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sección de Registro -->
+    <main class="auth-page">
+        <div class="auth-container">
+            <!-- Selector de tipo de registro -->
+            <div class="register-type-selector">
+                <h2>Crear Cuenta</h2>
+                <p class="auth-subtitle">Selecciona el tipo de cuenta que necesitas</p>
+                
+                <div class="type-cards">
+                    <div class="type-card" data-role="cliente">
+                        <div class="type-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h3>Cliente</h3>
+                        <p>Comprar productos de múltiples tiendas</p>
+                        <ul class="type-benefits">
+                            <li>Historial de compras</li>
+                            <li>Ofertas exclusivas</li>
+                            <li>Direcciones guardadas</li>
+                            <li>Seguimiento de pedidos</li>
+                        </ul>
+                        <button class="btn btn-outline select-type">Seleccionar</button>
+                    </div>
+
+                    <div class="type-card" data-role="afiliado">
+                        <div class="type-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3>Afiliado</h3>
+                        <p>Gana comisiones recomendando productos</p>
+                        <ul class="type-benefits">
+                            <li>Hasta 15% de comisión</li>
+                            <li>Dashboard de rendimiento</li>
+                            <li>Herramientas de marketing</li>
+                            <li>Pagos automáticos</li>
+                        </ul>
+                        <button class="btn btn-outline select-type">Seleccionar</button>
+                    </div>
+
+                    <div class="type-card" data-role="dependiente">
+                        <div class="type-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <h3>Dependiente</h3>
+                        <p>Trabaja en una tienda de la plataforma</p>
+                        <ul class="type-benefits">
+                            <li>Gestión de pedidos</li>
+                            <li>Control de inventario</li>
+                            <li>Atención al cliente</li>
+                            <li>Reportes de ventas</li>
+                        </ul>
+                        <button class="btn btn-outline select-type">Seleccionar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formularios de Registro (inicialmente ocultos) -->
+            <div class="register-forms" style="display: none;">
+                <!-- Formulario Común -->
+                <div class="auth-card">
+                    <div class="form-header">
+                        <button class="back-to-types">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </button>
+                        <h2 id="form-title">Registro</h2>
+                    </div>
+
+                    <form id="register-form" class="auth-form">
+                        <!-- Paso 1: Información Personal -->
+                        <div class="form-step active" data-step="1">
+                            <h3>Información Personal</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="name">
+                                        <i class="fas fa-user"></i> Nombre completo
+                                    </label>
+                                    <input type="text" id="name" name="name" placeholder="Tu nombre" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="phone">
+                                        <i class="fas fa-phone"></i> Teléfono
+                                    </label>
+                                    <input type="tel" id="phone" name="phone" placeholder="+53 5xxxxxxx" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">
+                                    <i class="fas fa-envelope"></i> Correo electrónico
+                                </label>
+                                <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="password">
+                                        <i class="fas fa-lock"></i> Contraseña
+                                    </label>
+                                    <div class="password-input">
+                                        <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required>
+                                        <button type="button" class="toggle-password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="confirmPassword">
+                                        <i class="fas fa-lock"></i> Confirmar contraseña
+                                    </label>
+                                    <div class="password-input">
+                                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Repite tu contraseña" required>
+                                        <button type="button" class="toggle-password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="step-actions">
+                                <button type="button" class="btn btn-next" data-next="2">
+                                    Siguiente <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2: Información Específica por Rol -->
+                        <div class="form-step" data-step="2">
+                            <h3 id="step2-title">Información Adicional</h3>
+                            
+                            <!-- Para Cliente -->
+                            <div class="role-fields" data-role-fields="cliente">
+                                <div class="form-group">
+                                    <label for="preferredCurrency">
+                                        <i class="fas fa-money-bill-wave"></i> Moneda preferida
+                                    </label>
+                                    <select id="preferredCurrency" name="preferredCurrency">
+                                        <option value="USD">USD - Dólar americano</option>
+                                        <option value="CUP" selected>CUP - Peso cubano</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Para Afiliado -->
+                            <div class="role-fields" data-role-fields="afiliado" style="display: none;">
+                                <div class="form-group">
+                                    <label for="bankAccount">
+                                        <i class="fas fa-university"></i> Cuenta bancaria
+                                    </label>
+                                    <input type="text" id="bankAccount" name="bankAccount" placeholder="Número de cuenta">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="idNumber">
+                                        <i class="fas fa-id-card"></i> Número de identificación
+                                    </label>
+                                    <input type="text" id="idNumber" name="idNumber" placeholder="Carné de identidad">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="referralCode">
+                                        <i class="fas fa-user-plus"></i> Código de referido (opcional)
+                                    </label>
+                                    <input type="text" id="referralCode" name="referralCode" placeholder="Código de otro afiliado">
+                                </div>
+                            </div>
+
+                            <!-- Para Dependiente -->
+                            <div class="role-fields" data-role-fields="dependiente" style="display: none;">
+                                <div class="form-group">
+                                    <label for="storeCode">
+                                        <i class="fas fa-store"></i> Código de tienda
+                                    </label>
+                                    <input type="text" id="storeCode" name="storeCode" placeholder="Código proporcionado por la tienda" required>
+                                    <small class="form-help">Solicita este código al administrador de tu tienda</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="employeeId">
+                                        <i class="fas fa-id-badge"></i> Número de empleado
+                                    </label>
+                                    <input type="text" id="employeeId" name="employeeId" placeholder="ID interno de empleado">
+                                </div>
+                            </div>
+
+                            <div class="step-actions">
+                                <button type="button" class="btn btn-prev" data-prev="1">
+                                    <i class="fas fa-arrow-left"></i> Anterior
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-user-plus"></i> Crear Cuenta
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>¿Ya tienes una cuenta? <a href="login.html">Inicia sesión aquí</a></p>
+                        <p class="small-text">Al registrarte, aceptas nuestros <a href="#">Términos de servicio</a> y <a href="#">Política de privacidad</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>PaTí Platform</h4>
+                    <p>Tu solución multi-tienda en Cuba</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <p>info@pati.cu</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PaTí. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let selectedRole = null;
+
+            // Seleccionar tipo de cuenta
+            document.querySelectorAll('.select-type').forEach(button => {
+                button.addEventListener('click', function() {
+                    const typeCard = this.closest('.type-card');
+                    selectedRole = typeCard.dataset.role;
+                    
+                    // Ocultar selector y mostrar formulario
+                    document.querySelector('.register-type-selector').style.display = 'none';
+                    document.querySelector('.register-forms').style.display = 'block';
+                    
+                    // Actualizar título del formulario
+                    document.getElementById('form-title').textContent = 
+                        `Registro como ${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)}`;
+                    
+                    // Mostrar campos específicos del rol
+                    document.querySelectorAll('.role-fields').forEach(fields => {
+                        fields.style.display = fields.dataset.roleFields === selectedRole ? 'block' : 'none';
+                    });
+                    
+                    // Actualizar título del paso 2
+                    const titles = {
+                        'cliente': 'Preferencias de Cliente',
+                        'afiliado': 'Información de Afiliado',
+                        'dependiente': 'Información de Empleado'
+                    };
+                    document.getElementById('step2-title').textContent = titles[selectedRole];
+                });
+            });
+
+            // Volver al selector de tipos
+            document.querySelector('.back-to-types').addEventListener('click', function() {
+                document.querySelector('.register-forms').style.display = 'none';
+                document.querySelector('.register-type-selector').style.display = 'block';
+                selectedRole = null;
+            });
+
+            // Navegación entre pasos
+            document.querySelector('.btn-next').addEventListener('click', function() {
+                const currentStep = document.querySelector('.form-step.active');
+                const nextStep = document.querySelector(`.form-step[data-step="2"]`);
+                
+                // Validar paso 1
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (!name || !email || !password || !confirmPassword) {
+                    alert('Por favor completa todos los campos');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    alert('Las contraseñas no coinciden');
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    alert('La contraseña debe tener al menos 8 caracteres');
+                    return;
+                }
+                
+                // Cambiar al paso 2
+                currentStep.classList.remove('active');
+                nextStep.classList.add('active');
+            });
+
+            document.querySelector('.btn-prev').addEventListener('click', function() {
+                const currentStep = document.querySelector('.form-step.active');
+                const prevStep = document.querySelector(`.form-step[data-step="1"]`);
+                
+                currentStep.classList.remove('active');
+                prevStep.classList.add('active');
+            });
+
+            // Manejar envío del formulario
+            document.getElementById('register-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Validar campos específicos del rol
+                if (selectedRole === 'dependiente') {
+                    const storeCode = document.getElementById('storeCode').value;
+                    if (!storeCode) {
+                        alert('El código de tienda es requerido para empleados');
+                        return;
+                    }
+                }
+                
+                // Recolectar datos
+                const userData = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    password: document.getElementById('password').value,
+                    passwordConfirm: document.getElementById('confirmPassword').value,
+                    role: selectedRole,
+                    preferredCurrency: document.getElementById('preferredCurrency')?.value,
+                    bankAccount: document.getElementById('bankAccount')?.value,
+                    idNumber: document.getElementById('idNumber')?.value,
+                    referralCode: document.getElementById('referralCode')?.value,
+                    storeCode: document.getElementById('storeCode')?.value,
+                    employeeId: document.getElementById('employeeId')?.value,
+                    emailVisibility: true
+                };
+                
+                try {
+                    await window.AuthSystem.register(userData);
+                    alert('¡Cuenta creada exitosamente! Redirigiendo...');
+                    // La redirección se maneja en auth.js
+                } catch (error) {
+                    alert('Error al crear la cuenta: ' + error.message);
+                }
+            });
+
+            // Toggle mostrar contraseña
+            document.querySelectorAll('.toggle-password').forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.closest('.password-input').querySelector('input');
+                    const icon = this.querySelector('i');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

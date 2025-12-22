@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Compra - PaTí</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PocketBase SDK -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .checkout-step {
+            position: relative;
+            padding-left: 40px;
+        }
+        
+        .checkout-step::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #F5DEB3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #8B4513;
+        }
+        
+        .checkout-step.active::before {
+            background: #8B4513;
+            color: white;
+        }
+        
+        .checkout-step.completed::before {
+            background: #10B981;
+            color: white;
+            content: '✓';
+        }
+        
+        .payment-method {
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .payment-method:hover {
+            border-color: #8B4513;
+        }
+        
+        .payment-method.selected {
+            border-color: #8B4513;
+            background: #F5DEB3;
+        }
+        
+        .cart-icon-badge {
+            font-size: 10px;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <a href="index.html">
+                        <img src="images/logo.png" alt="PaTí Logo" class="h-10 w-10">
+                    </a>
+                    <span class="text-2xl font-bold text-[#8B4513]">PaTí</span>
+                </div>
+                
+                <nav class="flex items-center space-x-6">
+                    <a href="index.html" class="text-gray-700 hover:text-[#8B4513]">Inicio</a>
+                    <a href="carrito.html" class="text-[#8B4513] font-bold">Carrito</a>
+                    
+                    <!-- Icono del carrito -->
+                    <div class="relative">
+                        <button class="cart-icon text-[#8B4513] hover:text-[#654321] text-xl">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-icon-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="display: none;">
+                                0
+                            </span>
+                        </button>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Proceso de Checkout -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Pasos del checkout -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div class="checkout-step active mb-4 md:mb-0">
+                    <h3 class="font-bold text-[#8B4513]">1. Información de Envío</h3>
+                    <p class="text-sm text-gray-600">Detalles de entrega</p>
+                </div>
+                <div class="hidden md:block flex-grow h-1 bg-gray-200 mx-4"></div>
+                
+                <div class="checkout-step mb-4 md:mb-0">
+                    <h3 class="font-bold text-gray-700">2. Método de Pago</h3>
+                    <p class="text-sm text-gray-500">Forma de pago</p>
+                </div>
+                <div class="hidden md:block flex-grow h-1 bg-gray-200 mx-4"></div>
+                
+                <div class="checkout-step">
+                    <h3 class="font-bold text-gray-700">3. Revisar y Confirmar</h3>
+                    <p class="text-sm text-gray-500">Resumen final</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Formulario de Checkout -->
+            <div class="lg:col-span-2">
+                <!-- Paso 1: Información de Envío -->
+                <div id="step-1" class="bg-white rounded-2xl shadow-lg p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-[#8B4513] mb-6">Información de Envío</h2>
+                    
+                    <form id="shipping-form">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-gray-700 mb-2">Nombre *</label>
+                                <input type="text" id="shipping-name" required
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Apellidos *</label>
+                                <input type="text" id="shipping-lastname" required
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2">Email *</label>
+                            <input type="email" id="shipping-email" required
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2">Teléfono *</label>
+                            <input type="tel" id="shipping-phone" required
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2">Dirección *</label>
+                            <textarea id="shipping-address" rows="3" required
+                                      class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <label class="block text-gray-700 mb-2">Ciudad *</label>
+                                <input type="text" id="shipping-city" required
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Provincia *</label>
+                                <input type="text" id="shipping-state" required
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-2">Código Postal</label>
+                                <input type="text" id="shipping-zip"
+                                       class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 mb-2">Instrucciones especiales (opcional)</label>
+                            <textarea id="shipping-notes" rows="2"
+                                      class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513] focus:ring-2 focus:ring-[#8B4513]/20"
+                                      placeholder="Ej: Llamar antes de entregar, dejar con vecino, etc."></textarea>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button type="button" onclick="goToStep(2)" 
+                                    class="bg-[#8B4513] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#654321] transition">
+                                Continuar al Pago
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Paso 2: Método de Pago (inicialmente oculto) -->
+                <div id="step-2" class="hidden bg-white rounded-2xl shadow-lg p-8 mb-6">
+                    <h2 class="text-2xl font-bold text-[#8B4513] mb-6">Método de Pago</h2>
+                    
+                    <div class="mb-6">
+                        <h3 class="font-bold text-gray-800 mb-4">Selecciona un método de pago:</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <!-- Tarjeta de Crédito/Débito -->
+                            <div class="payment-method p-4" onclick="selectPaymentMethod('card')">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-credit-card text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold">Tarjeta de Crédito/Débito</h4>
+                                        <p class="text-sm text-gray-600">Pago seguro con tarjeta</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Transferencia Bancaria -->
+                            <div class="payment-method p-4" onclick="selectPaymentMethod('transfer')">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-university text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold">Transferencia Bancaria</h4>
+                                        <p class="text-sm text-gray-600">Pago por transferencia</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Efectivo en Entrega -->
+                            <div class="payment-method p-4" onclick="selectPaymentMethod('cash')">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-money-bill-wave text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold">Efectivo en Entrega</h4>
+                                        <p class="text-sm text-gray-600">Paga cuando recibas</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Monedero Digital -->
+                            <div class="payment-method p-4" onclick="selectPaymentMethod('wallet')">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-wallet text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold">Monedero Digital</h4>
+                                        <p class="text-sm text-gray-600">Pago desde tu billetera</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Formulario de Tarjeta (oculto inicialmente) -->
+                        <div id="card-form" class="hidden bg-gray-50 p-6 rounded-lg">
+                            <h4 class="font-bold mb-4">Información de la Tarjeta</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Número de Tarjeta *</label>
+                                    <input type="text" placeholder="1234 5678 9012 3456"
+                                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513]">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Nombre en la Tarjeta *</label>
+                                    <input type="text" placeholder="JUAN PEREZ"
+                                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513]">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Mes Expiración *</label>
+                                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513]">
+                                        <option value="">MM</option>
+                                        <option value="01">01</option>
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Año Expiración *</label>
+                                    <select class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513]">
+                                        <option value="">YYYY</option>
+                                        <option value="2024">2024</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2026">2026</option>
+                                        <option value="2027">2027</option>
+                                        <option value="2028">2028</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 mb-2">CVV *</label>
+                                    <input type="text" placeholder="123" maxlength="3"
+                                           class="w-full p-3 border border-gray-300 rounded-lg focus:border-[#8B4513]">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Transferencia Bancaria (oculto inicialmente) -->
+                        <div id="transfer-info" class="hidden bg-gray-50 p-6 rounded-lg">
+                            <h4 class="font-bold mb-4">Información para Transferencia</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Banco:</span>
+                                    <span class="font-bold">Banco Nacional de Cuba</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Cuenta:</span>
+                                    <span class="font-bold">9201 3456 7890 1234</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Beneficiario:</span>
+                                    <span class="font-bold">PaTí Plataforma</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-700">Referencia:</span>
+                                    <span class="font-bold" id="transfer-reference">PATI-123456</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-4">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Usa esta referencia en el concepto de la transferencia
+                            </p>
+                        </div>
+                        
+                        <!-- Información de Moneda -->
+                        <div class="bg-[#F5DEB3] p-4 rounded-lg mb-6">
+                            <h4 class="font-bold text-[#8B4513] mb-2">Moneda de Pago</h4>
+                            <div class="flex space-x-4">
+                                <div class="flex items-center">
+                                    <input type="radio" id="currency-usd" name="currency" value="USD" checked 
+                                           class="mr-2" onchange="updatePaymentCurrency('USD')">
+                                    <label for="currency-usd" class="font-bold">USD ($)</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="radio" id="currency-cup" name="currency" value="CUP"
+                                           class="mr-2" onchange="updatePaymentCurrency('CUP')">
+                                    <label for="currency-cup" class="font-bold">CUP ($MN)</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Términos y condiciones -->
+                        <div class="mb-6">
+                            <div class="flex items-start">
+                                <input type="checkbox" id="terms" required
+                                       class="mt-1 mr-3">
+                                <label for="terms" class="text-gray-700">
+                                    Acepto los <a href="#" class="text-[#8B4513] hover:underline">Términos y Condiciones</a> 
+                                    y la <a href="#" class="text-[#8B4513] hover:underline">Política de Privacidad</a> de PaTí
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button type="button" onclick="goToStep(1)" 
+                                    class="border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-50 transition">
+                                <i class="fas fa-arrow-left mr-2"></i> Volver
+                            </button>
+                            <button type="button" onclick="goToStep(3)" 
+                                    class="bg-[#8B4513] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#654321] transition">
+                                Revisar Pedido
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Paso 3: Revisar y Confirmar (inicialmente oculto) -->
+                <div id="step-3" class="hidden bg-white rounded-2xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-[#8B4513] mb-6">Revisar y Confirmar Pedido</h2>
+                    
+                    <!-- Resumen del Pedido -->
+                    <div class="mb-8">
+                        <h3 class="font-bold text-gray-800 mb-4">Resumen del Pedido</h3>
+                        <div id="order-summary">
+                            <!-- Se llenará dinámicamente -->
+                            <div class="text-center py-4">
+                                <i class="fas fa-spinner fa-spin text-[#8B4513] mr-2"></i>
+                                <span>Cargando resumen...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Información de Envío -->
+                    <div class="mb-8 p-6 border border-gray-200 rounded-lg">
+                        <h3 class="font-bold text-gray-800 mb-4">Información de Envío</h3>
+                        <div id="shipping-summary">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                        <button onclick="goToStep(1)" class="text-[#8B4513] hover:underline mt-2">
+                            <i class="fas fa-edit mr-1"></i> Editar
+                        </button>
+                    </div>
+                    
+                    <!-- Método de Pago -->
+                    <div class="mb-8 p-6 border border-gray-200 rounded-lg">
+                        <h3 class="font-bold text-gray-800 mb-4">Método de Pago</h3>
+                        <div id="payment-summary">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                        <button onclick="goToStep(2)" class="text-[#8B4513] hover:underline mt-2">
+                            <i class="fas fa-edit mr-1"></i> Cambiar
+                        </button>
+                    </div>
+                    
+                    <!-- Total Final -->
+                    <div class="bg-gray-50 p-6 rounded-lg mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-lg font-bold">Subtotal:</span>
+                            <span class="text-lg font-bold" id="final-subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-lg">Envío:</span>
+                            <span class="text-lg" id="final-shipping">$0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center border-t pt-4">
+                            <span class="text-2xl font-bold">Total:</span>
+                            <span class="text-3xl font-bold text-[#8B4513]" id="final-total">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between">
+                        <button type="button" onclick="goToStep(2)" 
+                                class="border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-50 transition">
+                            <i class="fas fa-arrow-left mr-2"></i> Volver
+                        </button>
+                        <button type="button" onclick="placeOrder()" 
+                                class="bg-gradient-to-r from-[#8B4513] to-[#A0522D] text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 transition">
+                            <i class="fas fa-check-circle mr-2"></i> Confirmar Pedido
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resumen del Carrito -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-8">
+                    <h3 class="text-xl font-bold text-[#8B4513] mb-6 pb-4 border-b">Tu Pedido</h3>
+                    
+                    <!-- Items del carrito -->
+                    <div id="checkout-cart-items" class="mb-6">
+                        <!-- Se llenará dinámicamente -->
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin text-[#8B4513] mr-2"></i>
+                            <span>Cargando...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Resumen de Costos -->
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal:</span>
+                            <span class="font-bold" id="checkout-subtotal">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Envío:</span>
+                            <span class="font-bold" id="checkout-shipping">$0.00</span>
+                        </div>
+                        <div class="flex justify-between border-t pt-3">
+                            <span class="text-lg font-bold">Total:</span>
+                            <span class="text-xl font-bold text-[#8B4513]" id="checkout-total">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Seguridad -->
+                    <div class="border-t pt-6">
+                        <div class="flex items-center text-sm text-gray-600 mb-2">
+                            <i class="fas fa-lock text-green-500 mr-2"></i>
+                            <span>Pago 100% seguro</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-shield-alt text-blue-500 mr-2"></i>
+                            <span>Datos protegidos</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Ayuda -->
+                    <div class="mt-6 pt-6 border-t">
+                        <p class="text-sm text-gray-600 mb-2">¿Necesitas ayuda?</p>
+                        <a href="#" class="text-[#8B4513] hover:underline text-sm">
+                            <i class="fas fa-question-circle mr-1"></i> Contactar Soporte
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#654321] text-white py-8 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <img src="images/logo.png" alt="PaTí Logo" class="h-10 w-10">
+                <span class="text-xl font-bold">PaTí</span>
+            </div>
+            <p>Plataforma de Tiendas Online</p>
+            <p class="mt-2 text-sm text-gray-300">Checkout seguro • Garantía de compra</p>
+        </div>
+    </footer>
+
+    <!-- Modal de Confirmación -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8 text-center">
+            <div class="text-green-500 text-5xl mb-4">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">¡Pedido Confirmado!</h3>
+            <p class="text-gray-600 mb-6">Tu pedido ha sido procesado exitosamente.</p>
+            <div class="mb-6">
+                <div class="font-bold text-[#8B4513] text-xl mb-2" id="order-number">Orden #0000</div>
+                <p class="text-sm text-gray-500">Guarda este número para seguimiento</p>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="closeConfirmation()" 
+                        class="flex-1 border-2 border-[#8B4513] text-[#8B4513] py-3 rounded-lg font-bold hover:bg-[#8B4513] hover:text-white transition">
+                    Seguir Comprando
+                </button>
+                <button onclick="viewOrderDetails()" 
+                        class="flex-1 bg-[#8B4513] text-white py-3 rounded-lg font-bold hover:bg-[#654321] transition">
+                    Ver Detalles
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/checkout.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - PaTí</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="images/logo.png" alt="PaTí Logo" height="40">
+                <span>PaTí</span>
+            </a>
+            <nav class="nav">
+                <a href="index.html">Inicio</a>
+                <a href="login.html">Iniciar Sesión</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="auth-page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2>Recuperar Contraseña</h2>
+                <p class="auth-subtitle">Ingresa tu email para recibir un enlace de recuperación</p>
+                
+                <form id="recovery-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="recovery-email">
+                            <i class="fas fa-envelope"></i> Correo electrónico
+                        </label>
+                        <input type="email" id="recovery-email" placeholder="tu@email.com" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-paper-plane"></i> Enviar Enlace
+                    </button>
+                    
+                    <div class="auth-footer">
+                        <p><a href="login.html"><i class="fas fa-arrow-left"></i> Volver al inicio de sesión</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('recovery-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('recovery-email').value;
+            
+            try {
+                await AuthSystem.recoverPassword(email);
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

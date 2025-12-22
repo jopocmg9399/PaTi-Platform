@@ -1,11 +1,56 @@
-/* {
-    box-sizing: border-box;
+/* Variables de color */
+:root {
+    --primary-gold: #D4AF37;
+    --dark-gold: #B8860B;
+    --light-gold: #F5F0E6;
+    --brown: #8B4513;
+    --dark-brown: #654321;
+    --white: #FFFFFF;
 }
 
+/* Estilos generales */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #F5F0E6;
-    color: #8B6510;
+    background-color: var(--light-gold);
 }
 
-/* Otros estilos */
+/* Navbar personalizado */
+.navbar-brand {
+    font-weight: 800;
+    color: var(--primary-gold) !important;
+    text-shadow: 1px 1px 2px var(--dark-brown);
+}
+
+/* Cards de productos */
+.product-card {
+    transition: transform 0.3s ease;
+    border: 1px solid var(--primary-gold);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Botones */
+.btn-primary {
+    background-color: var(--primary-gold);
+    border-color: var(--primary-gold);
+    color: var(--dark-brown);
+}
+
+.btn-primary:hover {
+    background-color: var(--dark-gold);
+    border-color: var(--dark-gold);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 2rem !important;
+    }
+    
+    .product-card {
+        margin-bottom: 20px;
+    }
+}

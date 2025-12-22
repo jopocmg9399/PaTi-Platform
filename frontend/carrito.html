@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Carrito - PaTí</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PocketBase SDK -->
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .cart-item {
+            transition: all 0.3s;
+        }
+        
+        .cart-item:hover {
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.1);
+        }
+        
+        .quantity-btn {
+            background: #F5DEB3;
+            color: #8B4513;
+            transition: all 0.2s;
+        }
+        
+        .quantity-btn:hover {
+            background: #8B4513;
+            color: white;
+        }
+        
+        .quantity-input {
+            -moz-appearance: textfield;
+        }
+        
+        .quantity-input::-webkit-outer-spin-button,
+        .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .back-button {
+            position: sticky;
+            top: 20px;
+            background: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #8B4513;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 40;
+            transition: all 0.3s;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        .back-button:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .cart-icon-badge {
+            font-size: 10px;
+            font-weight: bold;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <a href="index.html">
+                        <img src="images/logo.png" alt="PaTí Logo" class="h-10 w-10">
+                    </a>
+                    <span class="text-2xl font-bold text-[#8B4513]">PaTí</span>
+                </div>
+                
+                <nav class="flex items-center space-x-6">
+                    <a href="index.html" class="text-gray-700 hover:text-[#8B4513]">Inicio</a>
+                    <a href="index.html#tiendas" class="text-gray-700 hover:text-[#8B4513]">Tiendas</a>
+                    
+                    <!-- Icono del carrito con badge -->
+                    <div class="relative">
+                        <button class="cart-icon text-[#8B4513] hover:text-[#654321] text-xl">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-icon-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">
+                                0
+                            </span>
+                        </button>
+                    </div>
+                    
+                    <!-- Botones de auth -->
+                    <div id="auth-buttons">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="container mx-auto px-4 py-8">
+        <a href="index.html" class="back-button">
+            <i class="fas fa-arrow-left mr-2"></i> Continuar Comprando
+        </a>
+        
+        <h1 class="text-3xl md:text-4xl font-bold text-[#8B4513] mb-8">Mi Carrito de Compras</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Lista de productos -->
+            <div class="lg:col-span-2">
+                <!-- Carrito vacío -->
+                <div id="empty-cart" class="hidden bg-white rounded-xl shadow-lg p-12 text-center">
+                    <i class="fas fa-shopping-cart text-gray-300 text-6xl mb-6"></i>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Tu carrito está vacío</h2>
+                    <p class="text-gray-600 mb-8">Agrega productos de nuestras tiendas para comenzar</p>
+                    <a href="index.html" class="inline-block bg-[#8B4513] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#654321] transition">
+                        Explorar Tiendas
+                    </a>
+                </div>
+                
+                <!-- Items del carrito -->
+                <div id="cart-items-container">
+                    <!-- Los productos se cargarán aquí dinámicamente -->
+                    <div class="text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-[#8B4513] text-3xl mb-4"></i>
+                        <p class="text-gray-600">Cargando tu carrito...</p>
+                    </div>
+                </div>
+                
+                <!-- Acciones del carrito -->
+                <div id="cart-actions" class="hidden mt-6">
+                    <div class="flex justify-between">
+                        <button onclick="clearCart()" 
+                                class="border-2 border-red-500 text-red-500 px-6 py-3 rounded-lg font-bold hover:bg-red-50 transition">
+                            <i class="fas fa-trash mr-2"></i> Vaciar Carrito
+                        </button>
+                        <a href="index.html" 
+                           class="border-2 border-[#8B4513] text-[#8B4513] px-6 py-3 rounded-lg font-bold hover:bg-[#8B4513] hover:text-white transition">
+                            <i class="fas fa-plus mr-2"></i> Agregar Más Productos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resumen del pedido -->
+            <div class="lg:col-span-1">
+                <div id="cart-summary" class="hidden bg-white rounded-xl shadow-lg p-6 sticky top-8">
+                    <h3 class="text-xl font-bold text-[#8B4513] mb-6 pb-4 border-b">Resumen del Pedido</h3>
+                    
+                    <!-- Subtotal por moneda -->
+                    <div class="mb-6" id="cart-subtotal">
+                        <!-- Se llenará dinámicamente -->
+                        <div class="text-center py-2">
+                            <i class="fas fa-spinner fa-spin text-[#8B4513] mr-2"></i>
+                            <span>Calculando...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Total items -->
+                    <div class="flex justify-between mb-4 pb-4 border-b">
+                        <span class="text-gray-600">Total Items:</span>
+                        <span class="font-bold" id="cart-total-items">0</span>
+                    </div>
+                    
+                    <!-- Total -->
+                    <div class="flex justify-between mb-6">
+                        <span class="text-xl font-bold">Total:</span>
+                        <span class="text-2xl font-bold text-[#8B4513]" id="cart-total">$0.00</span>
+                    </div>
+                    
+                    <!-- Botón de checkout -->
+                    <a href="checkout.html" 
+                       id="checkout-btn"
+                       class="block w-full bg-gradient-to-r from-[#8B4513] to-[#A0522D] text-white text-center py-4 rounded-lg font-bold text-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        Proceder al Pago
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                    
+                    <!-- Métodos de pago aceptados -->
+                    <div class="mt-6 pt-6 border-t">
+                        <p class="text-sm text-gray-600 mb-3">Métodos de pago aceptados:</p>
+                        <div class="flex space-x-3">
+                            <i class="fab fa-cc-visa text-2xl text-blue-600"></i>
+                            <i class="fab fa-cc-mastercard text-2xl text-red-600"></i>
+                            <i class="fas fa-money-bill-wave text-2xl text-green-600"></i>
+                            <i class="fas fa-university text-2xl text-gray-600"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Promociones -->
+                <div class="bg-gradient-to-r from-[#F5DEB3] to-[#E8C9A0] rounded-xl shadow-lg p-6 mt-6">
+                    <h4 class="font-bold text-[#8B4513] mb-3">¿Tienes un código promocional?</h4>
+                    <div class="flex">
+                        <input type="text" 
+                               placeholder="Ingresa tu código" 
+                               class="flex-grow p-3 border rounded-l-lg focus:outline-none focus:border-[#8B4513]">
+                        <button class="bg-[#8B4513] text-white px-4 rounded-r-lg font-bold hover:bg-[#654321]">
+                            Aplicar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#654321] text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-3">
+                        <img src="images/logo.png" alt="PaTí Logo" class="h-10 w-10">
+                        <span class="text-xl font-bold">PaTí</span>
+                    </div>
+                    <p class="mt-2 text-sm">Plataforma de Tiendas Online</p>
+                </div>
+                <div class="text-center md:text-right">
+                    <p>&copy; 2024 Todos los derechos reservados</p>
+                    <p class="mt-1 text-sm text-gray-300">Carrito seguro • Envíos rápidos • Soporte 24/7</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        // Inicializar página del carrito
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar carrito
+            loadCart();
+            
+            // Configurar autenticación
+            updateAuthUI();
+        });
+        
+        // Cargar y mostrar carrito
+        function loadCart() {
+            const cart = JSON.parse(localStorage.getItem('pati_cart') || '[]');
+            const emptyCart = document.getElementById('empty-cart');
+            const cartContainer = document.getElementById('cart-items-container');
+            const cartActions = document.getElementById('cart-actions');
+            const cartSummary = document.getElementById('cart-summary');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            if (cart.length === 0) {
+                emptyCart.classList.remove('hidden');
+                cartContainer.innerHTML = '';
+                if (cartActions) cartActions.classList.add('hidden');
+                if (cartSummary) cartSummary.classList.add('hidden');
+                updateCartCount();
+                return;
+            }
+            
+            emptyCart.classList.add('hidden');
+            if (cartActions) cartActions.classList.remove('hidden');
+            if (cartSummary) cartSummary.classList.remove('hidden');
+            if (checkoutBtn) checkoutBtn.disabled = false;
+            
+            // Renderizar items
+            let itemsHTML = '<div class="space-y-4">';
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                const currencySymbol = item.currency === 'USD' ? '$' : 'CUP $';
+                
+                itemsHTML += `
+                    <div class="cart-item bg-white p-4 rounded-lg shadow">
+                        <div class="flex justify-between items-center">
+                            <div class="flex-grow">
+                                <h4 class="font-bold">${item.name}</h4>
+                                <div class="text-sm text-gray-600 mt-1">
+                                    ${currencySymbol}${item.price.toFixed(2)} x ${item.quantity}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-[#8B4513]">${currencySymbol}${itemTotal.toFixed(2)}</div>
+                                <button onclick="removeFromCart('${item.productId}', '${item.currency}')" 
+                                        class="text-red-500 hover:text-red-700 text-sm mt-1">
+                                    <i class="fas fa-trash mr-1"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            itemsHTML += '</div>';
+            cartContainer.innerHTML = itemsHTML;
+            
+            // Actualizar resumen
+            updateCartSummary(cart);
+            updateCartCount();
+        }
+        
+        // Actualizar resumen del carrito
+        function updateCartSummary(cart) {
+            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            // Actualizar elementos
+            const subtotalElement = document.getElementById('cart-subtotal');
+            const totalItemsElement = document.getElementById('cart-total-items');
+            const totalElement = document.getElementById('cart-total');
+            
+            if (subtotalElement) {
+                subtotalElement.innerHTML = `
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Subtotal:</span>
+                        <span class="font-bold">$${subtotal.toFixed(2)}</span>
+                    </div>
+                `;
+            }
+            
+            if (totalItemsElement) {
+                totalItemsElement.textContent = totalItems;
+            }
+            
+            if (totalElement) {
+                totalElement.textContent = `$${subtotal.toFixed(2)}`;
+            }
+        }
+        
+        // Remover del carrito
+        function removeFromCart(productId, currency) {
+            let cart = JSON.parse(localStorage.getItem('pati_cart') || '[]');
+            cart = cart.filter(item => !(item.productId === productId && item.currency === currency));
+            localStorage.setItem('pati_cart', JSON.stringify(cart));
+            
+            // Recargar carrito
+            loadCart();
+        }
+        
+        // Vaciar carrito
+        function clearCart() {
+            if (confirm('¿Seguro que quieres vaciar todo el carrito?')) {
+                localStorage.removeItem('pati_cart');
+                loadCart();
+            }
+        }
+        
+        // Actualizar contador del carrito
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('pati_cart') || '[]');
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            const badges = document.querySelectorAll('.cart-icon-badge');
+            
+            badges.forEach(badge => {
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'flex' : 'none';
+            });
+        }
+        
+        // Función para actualizar UI de autenticación
+        function updateAuthUI() {
+            const authContainer = document.getElementById('auth-buttons');
+            if (!authContainer) return;
+            
+            // Simular usuario (en producción esto vendría de PocketBase)
+            const currentUser = window.PATI_CONFIG?.currentUser;
+            
+            if (currentUser) {
+                authContainer.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <span class="text-[#8B4513] hidden md:inline">Hola, ${currentUser.username}</span>
+                        <a href="admin-tienda.html" class="bg-[#8B4513] text-white px-4 py-2 rounded-lg text-sm">
+                            Mi Panel
+                        </a>
+                    </div>
+                `;
+            } else {
+                authContainer.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <a href="login.html" class="text-[#8B4513] hover:text-[#654321]">Login</a>
+                        <a href="registro.html" class="bg-[#8B4513] text-white px-4 py-2 rounded-lg text-sm">
+                            Registrarse
+                        </a>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
