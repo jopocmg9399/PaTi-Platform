@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Conexiones - PaTí</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        .test { margin: 1rem 0; padding: 1rem; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+    </style>
+</head>
+<body>
+    <h1>🔌 Test de Conexiones PaTí</h1>
+    
+    <div id="test-results"></div>
+    
+    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+    <script>
+        const tests = [
+            { name: 'Conexión a PocketBase', test: testConnection },
+            { name: 'Colección users', test: testUsersCollection },
+            { name: 'Colección stores', test: testStoresCollection },
+            { name: 'Colección products', test: testProductsCollection },
+            { name: 'Autenticación', test: testAuthentication }
+        ];
+        
+        const pb = new PocketBase('http://127.0.0.1:8090');
+        const resultsDiv = document.getElementById('test-results');
+        
+        async function runTests() {
+            for (const test of tests) {
+                await runTest(test);
+            }
+        }
+        
+        async function runTest(test) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test loading';
+            resultDiv.innerHTML = `🔄 ${test.name}...`;
+            resultsDiv.appendChild(resultDiv);
+            
+            try {
+                await test.test();
+                resultDiv.className = 'test success';
+                resultDiv.innerHTML = `✅ ${test.name} - OK`;
+            } catch (error) {
+                resultDiv.className = 'test error';
+                resultDiv.innerHTML = `❌ ${test.name} - ERROR: ${error.message}`;
+            }
+        }
+        
+        async function testConnection() {
+            const result = await pb.send('/api/health', {});
+            if (!result.code || result.code !== 200) {
+                throw new Error('No se pudo conectar');
+            }
+        }
+        
+        async function testUsersCollection() {
+            const result = await pb.collection('users').getList(1, 1);
+            if (!result.items) {
+                throw new Error('Colección no encontrada');
+            }
+        }
+        
+        async function testStoresCollection() {
+            const result = await pb.collection('stores').getList(1, 1);
+            if (!result.items) {
+                throw new Error('Colección no encontrada');
+            }
+        }
+        
+        async function testProductsCollection() {
+            const result = await pb.collection('products').getList(1, 1);
+            if (!result.items) {
+                throw new Error('Colección no encontrada');
+            }
+        }
+        
+        async function testAuthentication() {
+            // Test de login con credenciales de prueba
+            try {
+                await pb.collection('users').authWithPassword('test@test.com', 'test123');
+            } catch (error) {
+                // Esperado si no existe el usuario
+                if (error.status !== 400) {
+                    throw new Error('Error inesperado: ' + error.message);
+                }
+            }
+        }
+        
+        // Ejecutar tests
+        runTests();
+    </script>
+</body>
+</html>

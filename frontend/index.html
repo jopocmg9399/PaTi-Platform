@@ -3,44 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
     <title>PaTí - Plataforma de Tiendas Online</title>
-    <!-- Tailwind CSS para rápido desarrollo -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PocketBase SDK -->
-    <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .hero-bg {
-            background: linear-gradient(rgba(139, 69, 19, 0.8), rgba(139, 69, 19, 0.9)), 
-                        url('https://cdn.b12.io/client_media/QxJcSkIK/ecb4925e-72e0-11f0-8eab-0242ac110002-jpeg-hero_image.jpeg');
-            background-size: cover;
-            background-position: center;
-        }
-        .btn-primary {
-            background-color: var(--primary-brown);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        .btn-primary:hover {
-            background-color: var(--dark-brown);
-            transform: translateY(-2px);
-        }
-        .store-card {
-            border: 2px solid var(--cream);
-            border-radius: 12px;
-=======
-    <title>PaTí - De todo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
-	<script src="js/app.js"></script>
 	<style>
         :root {
             --gold-light: #F5F0E6;
@@ -391,12 +359,6 @@
             border-radius: 8px;
             padding: 15px;
             margin-bottom: 15px;
->>>>>>> 22668f091673e61a9c4c6a1859734c93fa445f8f
-            transition: transform 0.3s;
-        }
-        .store-card:hover {
-            transform: translateY(-5px);
-<<<<<<< HEAD
             box-shadow: 0 10px 20px rgba(139, 69, 19, 0.1);
         }
         .cart-icon-badge {
@@ -408,135 +370,7 @@
             align-items: center;
             justify-content: center;
         }
-    </style>
-</head>
-<body class="bg-gray-50">
-    <!-- Header Component -->
-    <header id="header" class="bg-white shadow-md">
-        <nav class="container mx-auto px-4 py-3">
-            <div class="flex justify-between items-center">
-                <!-- Logo y Nombre -->
-                <div class="flex items-center space-x-3">
-                    <img src="images/logo.png" alt="PaTí Logo" class="h-10 w-10">
-                    <span class="text-2xl font-bold text-[#8B4513]">PaTí</span>
-                </div>
-                
-                <!-- Menú Principal -->
-                <div class="hidden md:flex space-x-6">
-                    <a href="index.html" class="text-[#8B4513] font-semibold hover:text-[#654321]">Inicio</a>
-                    <a href="#nosotros" class="text-gray-700 hover:text-[#8B4513]">Nosotros</a>
-                    <a href="#contactos" class="text-gray-700 hover:text-[#8B4513]">Contactos</a>
-                    <a href="admin-tienda.html" class="text-gray-700 hover:text-[#8B4513]">Administrador</a>
-                </div>
-                
-                <!-- Botones Auth y Carrito -->
-                <div class="flex items-center space-x-4">
-                    <!-- Icono del Carrito -->
-                    <div class="relative mr-4">
-                        <button class="cart-icon text-[#8B4513] hover:text-[#654321] text-xl">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span class="cart-icon-badge absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="display: none;">
-                                0
-                            </span>
-                        </button>
-                    </div>
-                    
-                    <!-- Botones Auth -->
-                    <div id="auth-buttons" class="flex items-center space-x-4">
-                        <!-- Se llenará dinámicamente -->
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero-bg text-white py-16 md:py-24">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row items-center">
-                <!-- Logo Amplio y Bienvenida -->
-                <div class="md:w-1/2 mb-10 md:mb-0">
-                    <img src="images/logo.png" alt="PaTí Logo" class="h-40 w-40 mx-auto md:mx-0 mb-6">
-                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Bienvenido a PaTí</h1>
-                    <p class="text-xl mb-6">Tu plataforma para crear y gestionar tiendas online con múltiples monedas (USD/CUP) y sistema de afiliados.</p>
-                    
-                    <!-- CTA -->
-                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                        <button onclick="openStoreSelector()" class="bg-white text-[#8B4513] px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
-                            <i class="fas fa-store mr-2"></i> Seleccionar Tienda
-                        </button>
-                        <button onclick="openCreateStore()" class="bg-transparent border-2 border-white px-6 py-3 rounded-lg font-bold hover:bg-white/10 transition">
-                            <i class="fas fa-plus mr-2"></i> Crear Tienda
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Imagen derecha -->
-                <div class="md:w-1/2">
-                    <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                         alt="Tienda online" 
-                         class="rounded-lg shadow-2xl">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Buscador Avanzado -->
-    <section class="container mx-auto px-4 py-8">
-        <div class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-2xl font-bold text-[#8B4513] mb-4">Buscador Avanzado de Productos</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <input type="text" placeholder="Buscar productos..." class="p-3 border rounded-lg">
-                <select class="p-3 border rounded-lg">
-                    <option value="">Todas las categorías</option>
-                </select>
-                <select class="p-3 border rounded-lg">
-                    <option value="">Todas las tiendas</option>
-                </select>
-                <div class="flex space-x-2">
-                    <input type="number" placeholder="Min" class="p-3 border rounded-lg w-1/2">
-                    <input type="number" placeholder="Max" class="p-3 border rounded-lg w-1/2">
-                </div>
-            </div>
-            <button class="mt-4 bg-[#8B4513] text-white px-6 py-3 rounded-lg font-bold">
-                <i class="fas fa-search mr-2"></i> Buscar
-            </button>
-        </div>
-    </section>
-
-    <!-- Tiendas Destacadas -->
-    <section class="container mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold text-[#8B4513] mb-8 text-center">Tiendas Destacadas</h2>
-        <div id="stores-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Se llenará dinámicamente con tiendas reales -->
-            <div class="store-card p-4 bg-white text-center">
-                <img src="https://logos-world.net/wp-content/uploads/2020/04/Amazon-Logo.png" alt="Amazon" class="h-20 mx-auto mb-4">
-                <h3 class="font-bold text-lg">Amazon</h3>
-                <p class="text-gray-600">Tienda de ejemplo</p>
-            </div>
-            <!-- Más tiendas placeholder... -->
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer id="footer" class="bg-[#654321] text-white py-8">
-        <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2024 PaTí - Plataforma de Tiendas Online</p>
-            <p class="mt-2">Soporte: info@pati.com | Tel: +53 12345678</p>
-        </div>
-    </footer>
-
-    <!-- JavaScript -->
-    <script src="js/app.js"></script>
-    <script src="js/cart.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/platform.js"></script>
-</body>
-</html>
-=======
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        .store-status {
+         .store-status {
             display: inline-block;
             padding: 3px 10px;
             border-radius: 20px;
@@ -598,10 +432,12 @@
     </style>
 </head>
 <body>
-    <!-- Navbar -->
+	<!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#" onclick="showSection('home')">PaTí</a>
+            <a class="navbar-brand" href="#" onclick="showSection('home')">
+				<img src="images/logo.jpeg" alt="PaTí Logo" height="80">
+			</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -613,7 +449,7 @@
                     <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('contact')">Contactos</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" onclick="showStoreSelection()">Tiendas</a></li>
                     <!-- ✅ CORRECCIÓN: Botón "Administrador" ahora llama a showAdminLogin() -->
-                    <button class="btn btn-outline-light" onclick="showAdminLogin()">
+                   					<button class="btn btn-outline-light" onclick="showAdminLogin()">
 						<i class="fas fa-cog"></i> Administrador
 					</button>
                 </ul>
@@ -644,13 +480,13 @@
             </div>
             <div class="container mb-5">
                 <div class="amazed-person">
-                    <img src="https://cdn.b12.io/client_media/QxJcSkIK/ecb4925e-72e0-11f0-8eab-0242ac110002-jpeg-hero_image.jpeg" alt="Cliente asombrado">
-                    <div>
-                        <h3>¡Estoy asombrado!</h3>
-                        <p>Nunca imaginé encontrar tantos productos de calidad en un solo lugar. PaTí tiene todo lo que necesito y a precios increíbles. ¡La entrega a domicilio es un servicio excelente!</p>
-                        <button class="btn btn-primary mt-2" onclick="showStoreSelection()">Quiero comprar ahora</button>
-                    </div>
-                </div>
+					<img src="https://cdn.b12.io/client_media/QxJcSkIK/ecb4925e-72e0-11f0-8eab-0242ac110002-jpeg-hero_image.jpeg" alt="Cliente asombrado">
+						<div>
+						<h3>¡Estoy asombrado!</h3>
+						<p>Nunca imaginé encontrar tantos productos de calidad en un solo lugar. PaTí tiene todo lo que necesito y a precios increíbles. ¡La entrega a domicilio es un servicio excelente!</p>
+						<button class="btn btn-primary mt-2" onclick="showStoreSelection()">Quiero comprar ahora</button>
+					</div>
+				</div>
                 <h2 class="text-center mb-4">Tiendas Destacadas</h2>
                 <div class="row" id="featuredStores">
                     <!-- Featured stores will be loaded here -->
@@ -919,7 +755,7 @@
 					</div>
 					<div class="mb-3">
 						<label for="adminPassword" class="form-label">Contraseña</label>
-						<input type="password" class="form-control" id="adminPassword" placeholder="propietario123" required>
+						<input type="password" class="form-control" id="adminLoginPassword" placeholder="propietario123" required>
 					</div>
 					<div class="d-grid">
 						<button type="button" class="btn btn-primary" onclick="loginAsOwner()">Ingresar como Propietario</button>
@@ -1759,9 +1595,7 @@
     </div>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.js"></script>
-<script src="js/app.js"></script>
-    <!-- Chart.js -->
+	<!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
        // ====== CONEXIÓN A POCKETBASE REAL ======
@@ -1794,9 +1628,30 @@
 			try {
 				console.log('🔄 Cargando datos desde PocketBase...');
 				
+				// Verificar autenticación del usuario
+				const isAuthenticated = pb.authStore.isValid;
+				console.log(`🔐 Estado autenticación: ${isAuthenticated ? '✅ Autenticado' : '❌ No autenticado'}`);
+				
+				if (isAuthenticated) {
+					console.log(`👤 Usuario: ${pb.authStore.model?.email} (${pb.authStore.model?.role})`);
+					
+					// Si es usuario admin/dependiente, filtrar por su tienda
+					const userRole = pb.authStore.model?.role;
+					const userStoreId = pb.authStore.model?.store;
+					
+					// Crear filtros según el rol
+					let storeFilter = '';
+					if (userRole === 'admin' || userRole === 'dependiente') {
+						storeFilter = userStoreId ? `store = '${userStoreId}'` : '';
+					}
+				}
+				
 				// 1. Cargar categorías
 				try {
-					const categoriesResult = await pb.collection('categories').getList(1, 50);
+					const categoriesResult = await pb.collection('categories').getList(1, 50, {
+						sort: 'name',
+						$autoCancel: false
+					});
 					categories = categoriesResult.items.map(item => ({
 						id: item.id,
 						name: item.name,
@@ -1804,7 +1659,199 @@
 					}));
 					console.log(`✅ Categorías cargadas: ${categories.length}`);
 				} catch (error) {
-					console.warn('⚠️ No se pudieron cargar categorías, usando datos de ejemplo');
+					console.warn('⚠️ No se pudieron cargar categorías, usando datos de ejemplo', error);
+					categories = [
+						{ id: 'C001', name: 'Electrónica', description: 'Dispositivos electrónicos y tecnología' },
+						{ id: 'C002', name: 'Hogar', description: 'Artículos para el hogar' },
+						{ id: 'C003', name: 'Útiles y Herramientas', description: 'Herramientas y útiles varios' },
+						{ id: 'C004', name: 'Ropas', description: 'Ropa para toda la familia' },
+						{ id: 'C005', name: 'Calzados', description: 'Calzado de diferentes tipos' },
+						{ id: 'C006', name: 'Deportiva', description: 'Artículos deportivos' }
+					];
+				}
+				
+				// 2. Cargar tiendas (con filtro según usuario)
+				try {
+					let filter = '';
+					const userRole = pb.authStore.model?.role;
+					const userStoreId = pb.authStore.model?.store;
+					
+					// Solo propietarios ven todas las tiendas
+					if (userRole !== 'propietario' && userStoreId) {
+						filter = `id = '${userStoreId}'`;
+					}
+					
+					const storesResult = await pb.collection('stores').getList(1, 50, {
+						filter,
+						sort: 'name',
+						expand: 'category',
+						$autoCancel: false
+					});
+					
+					stores = storesResult.items.map(item => ({
+						id: item.id,
+						name: item.name,
+						categoryId: item.category || 'C001',
+						admin: item.admin_email || item.admin || 'admin@tienda.com',
+						status: item.status || 'Activo',
+						image: item.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+						description: item.description || 'Tienda en línea',
+						logo: item.logo || '',
+						phone: item.phone || '',
+						address: item.address || ''
+					}));
+					console.log(`✅ Tiendas cargadas: ${stores.length} ${filter ? '(filtradas)' : ''}`);
+				} catch (error) {
+					console.warn('⚠️ No se pudieron cargar tiendas, usando datos de ejemplo', error);
+					stores = [
+						{ id: 1, name: "TechZone", categoryId: 'C001', admin: "admin@techzone.com", status: "Activo", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "La mejor tecnología en electrónica" },
+						{ id: 2, name: "FashionStyle", categoryId: 'C004', admin: "admin@fashionstyle.com", status: "Activo", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Moda para todos los estilos" }
+					];
+				}
+				
+				// 3. Cargar productos (con filtro según usuario)
+				try {
+					let productFilter = '';
+					const userRole = pb.authStore.model?.role;
+					const userStoreId = pb.authStore.model?.store;
+					
+					// Solo propietarios ven todos los productos
+					if (userRole !== 'propietario' && userStoreId) {
+						productFilter = `store = '${userStoreId}'`;
+					}
+					
+					const productsResult = await pb.collection('products').getList(1, 200, {
+						filter: productFilter,
+						sort: '-created',
+						expand: 'store,category',
+						$autoCancel: false
+					});
+					
+					products = productsResult.items.map(item => {
+						const storeData = stores.find(s => s.id === item.store) || { name: 'Tienda General' };
+						return {
+							id: item.id,
+							name: item.name,
+							store: storeData.name,
+							storeId: item.store,
+							categoryId: item.category || 'C001',
+							price1: parseFloat(item.price1) || 0,
+							price2: parseFloat(item.price2) || 0,
+							price3: parseFloat(item.price3) || 0,
+							stock: parseInt(item.stock) || 0,
+							image: item.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+							description: item.description || '',
+							created: item.created,
+							updated: item.updated
+						};
+					});
+					console.log(`✅ Productos cargados: ${products.length} ${productFilter ? '(filtrados)' : ''}`);
+				} catch (error) {
+					console.warn('⚠️ No se pudieron cargar productos, usando datos de ejemplo', error);
+					products = [
+						{ id: 1, name: "Smartphone XYZ", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 299.99, price2: 279.99, price3: 259.99, stock: 15, image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Smartphone de última generación con 128GB de almacenamiento." }
+					];
+				}
+				
+				// 4. Cargar usuarios/clientes (solo para admin/propietario)
+				try {
+					const userRole = pb.authStore.model?.role;
+					if (userRole === 'admin' || userRole === 'propietario') {
+						const customersResult = await pb.collection('users').getList(1, 100, {
+							filter: 'role = "cliente"',
+							sort: '-created',
+							$autoCancel: false
+						});
+						
+						customers = customersResult.items.map(item => ({
+							id: item.id,
+							name: item.name || 'Cliente',
+							email: item.email,
+							phone: item.phone || '',
+							address: item.address || '',
+							storeId: item.store,
+							store: stores.find(s => s.id === item.store)?.name || 'General',
+							orders: 0, // Podrías contar pedidos reales aquí
+							created: item.created
+						}));
+						console.log(`✅ Clientes cargados: ${customers.length}`);
+					}
+				} catch (error) {
+					console.warn('⚠️ No se pudieron cargar clientes', error);
+					customers = [];
+				}
+				
+				// 5. Cargar afiliados (solo para admin/propietario)
+				try {
+					const userRole = pb.authStore.model?.role;
+					if (userRole === 'admin' || userRole === 'propietario') {
+						const affiliatesResult = await pb.collection('users').getList(1, 50, {
+							filter: 'role = "afiliado"',
+							sort: '-created',
+							$autoCancel: false
+						});
+						
+						affiliates = affiliatesResult.items.map(item => ({
+							id: item.id,
+							name: item.name || 'Afiliado',
+							email: item.email,
+							storeId: item.store,
+							store: stores.find(s => s.id === item.store)?.name || 'General',
+							commission: parseFloat(item.commission) || 10.0,
+							sales: parseFloat(item.total_sales) || 0,
+							status: item.status || 'Activo',
+							created: item.created
+						}));
+						console.log(`✅ Afiliados cargados: ${affiliates.length}`);
+					}
+				} catch (error) {
+					console.warn('⚠️ No se pudieron cargar afiliados', error);
+					affiliates = [];
+				}
+				
+				console.log('✅ Datos REALES cargados desde PocketBase');
+				console.log(`📊 Resumen: ${stores.length} tiendas, ${products.length} productos, ${categories.length} categorías`);
+				
+				// Actualizar UI
+				if (typeof loadFeaturedStores === 'function') loadFeaturedStores();
+				if (typeof loadProducts === 'function') loadProducts();
+				
+				// Si hay usuario autenticado y es admin, cargar datos del panel
+				if (pb.authStore.isValid && 
+					(pb.authStore.model?.role === 'admin' || 
+					 pb.authStore.model?.role === 'propietario' || 
+					 pb.authStore.model?.role === 'dependiente')) {
+					
+					// Ocultar contenido principal y mostrar panel admin
+					document.getElementById('mainContent').classList.add('d-none');
+					document.getElementById('adminPanel').classList.remove('d-none');
+					document.getElementById('authButtons').classList.add('d-none');
+					document.getElementById('logoutButton').classList.remove('d-none');
+					
+					// Configurar usuario actual
+					currentUser = {
+						id: pb.authStore.model.id,
+						name: pb.authStore.model.name || pb.authStore.model.email,
+						email: pb.authStore.model.email,
+						role: pb.authStore.model.role,
+						storeId: pb.authStore.model.store
+					};
+					
+					isAdminLoggedIn = true;
+					loadAdminData();
+					showNotification(`Sesión restaurada: ${pb.authStore.model.role}`);
+				}
+				
+			} catch (error) {
+				console.error('❌ Error grave cargando datos:', error);
+				
+				// Solo mostrar alerta si es un error crítico
+				if (!categories.length && !products.length && !stores.length) {
+					alert('Error conectando con el servidor. Usando datos de ejemplo.');
+				}
+				
+				// Asegurar datos mínimos para que la app funcione
+				if (categories.length === 0) {
 					categories = [
 						{ id: 'C001', name: 'Electrónica', description: '' },
 						{ id: 'C002', name: 'Hogar', description: '' },
@@ -1815,62 +1862,24 @@
 					];
 				}
 				
-				// 2. Cargar tiendas
-				try {
-					const storesResult = await pb.collection('stores').getList(1, 50);
-					stores = storesResult.items.map(item => ({
-						id: item.id,
-						name: item.name,
-						categoryId: item.category || 'C001',
-						admin: item.admin_email || 'admin@tienda.com',
-						status: item.status || 'Activo',
-						image: item.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-						description: item.description || 'Tienda en línea'
-					}));
-					console.log(`✅ Tiendas cargadas: ${stores.length}`);
-				} catch (error) {
-					console.warn('⚠️ No se pudieron cargar tiendas, usando datos de ejemplo');
+				if (stores.length === 0) {
 					stores = [
 						{ id: 1, name: "TechZone", categoryId: 'C001', admin: "admin@techzone.com", status: "Activo", image: "https://images.unsplash.com/photo-1561154464-82e9adf32764?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "La mejor tecnología" },
 						{ id: 2, name: "FashionStyle", categoryId: 'C004', admin: "admin@fashionstyle.com", status: "Activo", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Moda para todos" }
 					];
 				}
 				
-				// 3. Cargar productos
-				try {
-					const productsResult = await pb.collection('products').getList(1, 200);
-					products = productsResult.items.map(item => ({
-						id: item.id,
-						name: item.name,
-						store: item.store_name || 'Tienda General',
-						storeId: item.store || 1,
-						categoryId: item.category || 'C001',
-						price1: parseFloat(item.price1) || 0,
-						price2: parseFloat(item.price2) || 0,
-						price3: parseFloat(item.price3) || 0,
-						stock: parseInt(item.stock) || 0,
-						image: item.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-						description: item.description || ''
-					}));
-					console.log(`✅ Productos cargados: ${products.length}`);
-				} catch (error) {
-					console.warn('⚠️ No se pudieron cargar productos, usando datos de ejemplo');
+				if (products.length === 0) {
 					products = [
 						{ id: 1, name: "Smartphone XYZ", store: "TechZone", storeId: 1, categoryId: 'C001', price1: 299.99, price2: 279.99, price3: 259.99, stock: 15, image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80", description: "Smartphone de última generación." }
 					];
 				}
 				
-				console.log('✅ Datos REALES cargados desde PocketBase');
-				
-				// Actualizar UI
+				// Forzar actualización de UI
 				if (typeof loadFeaturedStores === 'function') loadFeaturedStores();
 				if (typeof loadProducts === 'function') loadProducts();
-				
-			} catch (error) {
-				console.error('❌ Error grave cargando datos:', error);
-				alert('Error conectando con el servidor. Usando datos de ejemplo.');
 			}
-		}	
+		}
         function setupEventListeners() {
             // Admin login form
             const adminLoginForm = document.getElementById('adminLoginForm');
@@ -2403,36 +2412,103 @@
                 }
             }, 3000);
         }
-        function userLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const role = document.getElementById('loginRole').value;
-            const storeId = parseInt(document.getElementById('loginStoreId').value);
-            if (email && password) {
-                currentUser = {
-                    id: Date.now(),
-                    email,
-                    role,
-                    storeId
-                };
-                document.getElementById('authButtons').classList.add('d-none');
-                document.getElementById('logoutButton').classList.remove('d-none');
-                const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
-                loginModal.hide();
-                if (role === 'admin') {
-                    isAdminLoggedIn = true;
-                    document.getElementById('mainContent').classList.add('d-none');
-                    document.getElementById('adminPanel').classList.remove('d-none');
-                    loadAdminData();
-                    showNotification('Has iniciado sesión como administrador de la tienda');
-                } else {
-                    showSection('products');
-                    showNotification(`Has iniciado sesión como ${role}`);
-                }
-            } else {
-                alert('Por favor, ingresa tus credenciales');
-            }
-        }
+        async function userLogin() {
+			const email = document.getElementById('loginEmail').value;
+			const password = document.getElementById('loginPassword').value;
+			const role = document.getElementById('loginRole').value;
+			const storeId = parseInt(document.getElementById('loginStoreId').value);
+			
+			if (!email || !password) {
+				alert('Por favor, ingresa tus credenciales');
+				return;
+			}
+			
+			try {
+				// ✅ AUTENTICACIÓN REAL CON POCKETBASE
+				const authData = await pb.collection('users').authWithPassword(email, password);
+				
+				// Obtener datos del usuario autenticado
+				const userRecord = authData.record;
+				
+				currentUser = {
+					id: userRecord.id,
+					name: userRecord.name || email.split('@')[0],
+					email: userRecord.email,
+					role: userRecord.role || role, // Usar el rol de la base de datos si existe
+					storeId: userRecord.store || storeId
+				};
+				
+				// Actualizar UI
+				document.getElementById('authButtons').classList.add('d-none');
+				document.getElementById('logoutButton').classList.remove('d-none');
+				
+				// Cerrar modal
+				const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+				if (loginModal) loginModal.hide();
+				
+				// Redirigir según rol
+				const userRole = userRecord.role || role;
+				
+				if (userRole === 'admin' || userRole === 'propietario') {
+					isAdminLoggedIn = true;
+					document.getElementById('mainContent').classList.add('d-none');
+					document.getElementById('adminPanel').classList.remove('d-none');
+					loadAdminData();
+					showNotification(`Has iniciado sesión como ${userRole === 'propietario' ? 'Propietario' : 'Administrador de tienda'}`);
+				} else if (userRole === 'dependiente') {
+					isAdminLoggedIn = true;
+					document.getElementById('mainContent').classList.add('d-none');
+					document.getElementById('adminPanel').classList.remove('d-none');
+					loadAdminData();
+					showNotification('Has iniciado sesión como Dependiente');
+				} else {
+					// Cliente o Afiliado
+					showSection('products');
+					showNotification(`Has iniciado sesión como ${userRole}`);
+				}
+				
+			} catch (error) {
+				console.error('Error en login:', error);
+				
+				// Manejo de errores específicos
+				if (error.status === 400) {
+					alert('Credenciales incorrectas. Verifica tu email y contraseña.');
+				} else if (error.status === 0) {
+					alert('Error de conexión. Verifica tu internet.');
+				} else {
+					alert('Error al iniciar sesión. Intenta nuevamente.');
+				}
+				
+				// Fallback a modo demo si hay error de conexión
+				console.log('Usando modo demo por error de conexión...');
+				
+				// SOLO PARA DEMO - Eliminar esto en producción
+				currentUser = {
+					id: Date.now(),
+					email,
+					role,
+					storeId,
+					name: email.split('@')[0]
+				};
+				
+				document.getElementById('authButtons').classList.add('d-none');
+				document.getElementById('logoutButton').classList.remove('d-none');
+				
+				const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+				if (loginModal) loginModal.hide();
+				
+				if (role === 'admin') {
+					isAdminLoggedIn = true;
+					document.getElementById('mainContent').classList.add('d-none');
+					document.getElementById('adminPanel').classList.remove('d-none');
+					loadAdminData();
+					showNotification('Has iniciado sesión como administrador de la tienda (modo demo)');
+				} else {
+					showSection('products');
+					showNotification(`Has iniciado sesión como ${role} (modo demo)`);
+				}
+			}
+		}
         function userRegister() {
             const name = document.getElementById('registerName').value;
             const email = document.getElementById('registerEmail').value;
@@ -2487,18 +2563,24 @@
 			}
 		}
         function logout() {
-            currentUser = null;
-            isAdminLoggedIn = false;
-            currentStoreId = null;
-            cart = [];
-            updateCart();
-            document.getElementById('mainContent').classList.remove('d-none');
-            document.getElementById('adminPanel').classList.add('d-none');
-            document.getElementById('authButtons').classList.add('d-none');
-            document.getElementById('logoutButton').classList.add('d-none');
-            showSection('home');
-            showNotification('Has cerrado sesión correctamente');
-        }
+			// Limpiar autenticación de PocketBase
+			pb.authStore.clear();
+			
+			// Limpiar datos locales
+			currentUser = null;
+			isAdminLoggedIn = false;
+			currentStoreId = null;
+			cart = [];
+			
+			// Actualizar UI
+			updateCart();
+			document.getElementById('mainContent').classList.remove('d-none');
+			document.getElementById('adminPanel').classList.add('d-none');
+			document.getElementById('authButtons').classList.add('d-none');
+			document.getElementById('logoutButton').classList.add('d-none');
+			showSection('home');
+			showNotification('Has cerrado sesión correctamente');
+		}
         function createStore() {
             const storeName = document.getElementById('storeName').value;
             const storeCategory = document.getElementById('storeCategory').value;
@@ -3548,20 +3630,48 @@
                 });
             }
         }
-		function loginAsOwner() {
-			isAdminLoggedIn = true;
-			currentUser = {
-				id: 1,
-				name: 'Propietario',
-				email: 'propietario@pati.com',
-				role: 'propietario'
-			};
-			document.getElementById('mainContent').classList.add('d-none');
-			document.getElementById('adminPanel').classList.remove('d-none');
-			document.getElementById('authButtons').classList.add('d-none');
-			document.getElementById('logoutButton').classList.remove('d-none');
-			loadAdminData();
-			showNotification('Has iniciado sesión como Propietario');
+		async function loginAsOwner() {
+			const username = document.getElementById('adminUsername').value.trim();
+			const password = document.getElementById('adminPassword').value.trim();
+			
+			if (!username || !password) {
+				alert('Por favor, ingresa usuario y contraseña');
+				return;
+			}
+			
+			try {
+				// ✅ CONEXIÓN REAL CON POCKETBASE
+				const authData = await pb.collection('users').authWithPassword(username, password);
+				
+				// Verificar si el usuario es propietario (deberías tener un campo 'role' en tu tabla users)
+				if (authData.record.role === 'propietario') {
+					isAdminLoggedIn = true;
+					currentUser = {
+						id: authData.record.id,
+						name: authData.record.name || 'Propietario',
+						email: authData.record.email,
+						role: 'propietario'
+					};
+					
+					document.getElementById('mainContent').classList.add('d-none');
+					document.getElementById('adminPanel').classList.remove('d-none');
+					document.getElementById('authButtons').classList.add('d-none');
+					document.getElementById('logoutButton').classList.remove('d-none');
+					
+					const modal = bootstrap.Modal.getInstance(document.getElementById('adminLoginModal'));
+					if (modal) modal.hide();
+					
+					loadAdminData();
+					showNotification('Has iniciado sesión como Propietario');
+				} else {
+					alert('No tienes permisos de propietario');
+					pb.authStore.clear();
+				}
+				
+			} catch (error) {
+				console.error('Error de autenticación:', error);
+				alert('Credenciales incorrectas o error de conexión');
+			}
 		}
     </script>
     <!-- View Store Modal -->
@@ -4120,5 +4230,3 @@
 </body>
 </html>
 
-
->>>>>>> 22668f091673e61a9c4c6a1859734c93fa445f8f

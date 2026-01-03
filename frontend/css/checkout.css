@@ -1,0 +1,364 @@
+/* Estilos específicos para checkout */
+.checkout-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* Pasos del checkout */
+.checkout-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.checkout-steps:before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #ddd;
+    z-index: 1;
+}
+
+.step-indicator {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    flex: 1;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.step-indicator.active .step-number {
+    background: #8B5A2B;
+    border-color: #8B5A2B;
+    color: white;
+}
+
+.step-indicator.completed .step-number {
+    background: #2ecc71;
+    border-color: #2ecc71;
+    color: white;
+}
+
+.step-title {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.step-indicator.active .step-title {
+    color: #8B5A2B;
+    font-weight: 500;
+}
+
+/* Contenido del checkout */
+.checkout-content {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.checkout-step {
+    display: none;
+}
+
+.checkout-step.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Formularios */
+.shipping-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.shipping-option {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.shipping-option:hover {
+    border-color: #8B5A2B;
+}
+
+.shipping-option.selected {
+    border-color: #8B5A2B;
+    background: #8B5A2B10;
+}
+
+.shipping-option input {
+    display: none;
+}
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.payment-method {
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+    border-color: #8B5A2B;
+}
+
+.payment-method.selected {
+    border-color: #8B5A2B;
+    background: #8B5A2B10;
+}
+
+.payment-method input {
+    display: none;
+}
+
+.payment-method i {
+    font-size: 2rem;
+    color: #8B5A2B;
+    margin-bottom: 0.5rem;
+}
+
+/* Campos de tarjeta */
+.card-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.card-fields .form-group:first-child {
+    grid-column: 1 / -1;
+}
+
+/* Revisión del pedido */
+.review-section {
+    margin-bottom: 2rem;
+}
+
+.review-section h3 {
+    color: #8B5A2B;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.review-info p {
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.review-info strong {
+    min-width: 120px;
+}
+
+.store-review {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.store-review h4 {
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.review-items {
+    margin-bottom: 0.5rem;
+}
+
+.review-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.store-review-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    padding-top: 0.5rem;
+    border-top: 2px solid #ddd;
+}
+
+.payment-review {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.total-review {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 1.2rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid #ddd;
+}
+
+/* Confirmación de pedido */
+.order-confirmation {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.confirmation-icon {
+    font-size: 4rem;
+    color: #2ecc71;
+    margin-bottom: 1rem;
+}
+
+.order-number {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.confirmation-details {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 2rem auto;
+    max-width: 500px;
+    text-align: left;
+}
+
+.confirmation-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.confirmation-note {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Estados */
+.status-pending {
+    color: #f39c12;
+    font-weight: 500;
+}
+
+.status-paid {
+    color: #2ecc71;
+    font-weight: 500;
+}
+
+.status-cancelled {
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+/* Navegación */
+.checkout-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #eee;
+}
+
+/* Alertas */
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.alert-error {
+    background: #fee;
+    border: 1px solid #fcc;
+    color: #c00;
+}
+
+.alert i {
+    margin-top: 0.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .checkout-steps {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .checkout-steps:before {
+        display: none;
+    }
+    
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-align: left;
+    }
+    
+    .step-number {
+        margin: 0;
+        flex-shrink: 0;
+    }
+    
+    .shipping-options,
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-fields {
+        grid-template-columns: 1fr;
+    }
+    
+    .checkout-navigation {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .confirmation-actions {
+        flex-direction: column;
+    }
+}
